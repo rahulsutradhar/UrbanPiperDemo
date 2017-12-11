@@ -17,6 +17,8 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.piper.urbandemo.R;
+import com.piper.urbandemo.helper.Keys;
+import com.piper.urbandemo.helper.PreferenceManager;
 import com.piper.urbandemo.home.HomeActivity;
 
 import java.util.regex.Matcher;
@@ -35,6 +37,7 @@ public class EmailLoginFormActivity extends AppCompatActivity {
     private Button signinButton;
     private FirebaseAuth mAuth;
     private boolean operationSignin;
+    private PreferenceManager preferenceManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +57,7 @@ public class EmailLoginFormActivity extends AppCompatActivity {
             }
         });
 
+        //if true then perform Signin else perform signup
         if (operationSignin) {
             getSupportActionBar().setTitle("Sign In with Email");
         } else {
@@ -65,6 +69,9 @@ public class EmailLoginFormActivity extends AppCompatActivity {
 
         //Firebase Instance
         mAuth = FirebaseAuth.getInstance();
+
+        //initialize preference
+        preferenceManager = new PreferenceManager(this);
 
     }
 
@@ -125,6 +132,12 @@ public class EmailLoginFormActivity extends AppCompatActivity {
         return flag;
     }
 
+    /**
+     * Email Patern Matcher
+     *
+     * @param email
+     * @return
+     */
     public boolean emailPatternMatcher(String email) {
         String pttn = "^\\D.+@.+\\.[a-z]+";
         Pattern p = Pattern.compile(pttn);
@@ -171,6 +184,9 @@ public class EmailLoginFormActivity extends AppCompatActivity {
                             //Login Successful; Now navigate to home page
                             Toast.makeText(EmailLoginFormActivity.this, "Welcome " + user.getEmail(), Toast.LENGTH_SHORT).show();
 
+                            //set Logged in status to preference
+                            preferenceManager.setBooleanPref(Keys.EMAIL_LOGIN, true);
+
                             //navigate to home
                             navigateAfterLogin(user);
 
@@ -203,6 +219,9 @@ public class EmailLoginFormActivity extends AppCompatActivity {
 
                             //Login Successful; Now navigate to home page
                             Toast.makeText(EmailLoginFormActivity.this, "Welcome " + user.getEmail(), Toast.LENGTH_SHORT).show();
+
+                            //set Logged in status to preference
+                            preferenceManager.setBooleanPref(Keys.EMAIL_LOGIN, true);
 
                             //navigate to home
                             navigateAfterLogin(user);
