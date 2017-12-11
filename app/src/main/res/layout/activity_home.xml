@@ -14,6 +14,7 @@
         app:elevation="0dp">
 
         <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize">
 
@@ -33,7 +34,7 @@
                     android:paddingTop="4dp"
                     android:text="Top Stories"
                     android:textColor="@color/color_white"
-                    android:textSize="20dp"
+                    android:textSize="20sp"
                     android:textStyle="bold" />
 
                 <!-- SUb title -->
@@ -43,7 +44,7 @@
                     android:fontFamily="@font/avenirnextpro_regular"
                     android:text="Updated 23 mins ago"
                     android:textColor="@color/color_white"
-                    android:textSize="12dp"
+                    android:textSize="12sp"
                     android:textStyle="normal" />
 
             </LinearLayout>

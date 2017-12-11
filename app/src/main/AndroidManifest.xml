@@ -25,6 +25,11 @@
             </intent-filter>
         </activity>
 
+        <!-- Email Login Activity -->
+        <activity android:name=".authentication.EmailLoginFormActivity">
+
+        </activity>
+
         <!-- FCM Notification Reciever -->
         <receiver
             android:name="com.google.firebase.iid.FirebaseInstanceIdReceiver"

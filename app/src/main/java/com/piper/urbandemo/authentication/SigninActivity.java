@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -38,6 +39,7 @@ public class SigninActivity extends AppCompatActivity {
     private GoogleSignInClient mGoogleSignInClient;
     private static final int RC_SIGN_IN = 9001;
     private ProgressBar progressBar;
+    private Button emailSignin, emailSignup, phoneSignin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,14 +67,35 @@ public class SigninActivity extends AppCompatActivity {
      */
     public void setViews() {
         googleSigninButton = (LinearLayout) findViewById(R.id.google_siginin_button);
+        emailSignin = (Button) findViewById(R.id.email_button_signin);
+        emailSignup = (Button) findViewById(R.id.email_button_signup);
+        phoneSignin = (Button) findViewById(R.id.phone_button);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
         progressBar.setVisibility(View.INVISIBLE);
+
+        //google login Button click listener
         googleSigninButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //perform google signin
                 doGoogleLogin();
+            }
+        });
+
+        //email singin Button click listener
+        emailSignin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openSinginForm();
+            }
+        });
+
+        //email create new user
+        emailSignup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openSignUpForm();
             }
         });
     }
@@ -83,7 +106,11 @@ public class SigninActivity extends AppCompatActivity {
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
-            Toast.makeText(SigninActivity.this, "Logged in as " + currentUser.getDisplayName() + " !!", Toast.LENGTH_SHORT).show();
+            if (!currentUser.getDisplayName().isEmpty()) {
+                Toast.makeText(SigninActivity.this, "Logged in as " + currentUser.getDisplayName() + " !!", Toast.LENGTH_SHORT).show();
+            } else if (!currentUser.getEmail().isEmpty()) {
+                Toast.makeText(SigninActivity.this, "Logged in as " + currentUser.getEmail(), Toast.LENGTH_SHORT).show();
+            }
             navigateAfterLogin(currentUser);
         }
     }
@@ -94,6 +121,24 @@ public class SigninActivity extends AppCompatActivity {
     public void doGoogleLogin() {
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
+    }
+
+    /**
+     * Email Login Singin
+     */
+    public void openSinginForm() {
+        Intent intent = new Intent(this, EmailLoginFormActivity.class);
+        intent.putExtra("Signin", true);
+        startActivity(intent);
+    }
+
+    /**
+     * Create User
+     */
+    public void openSignUpForm() {
+        Intent intent = new Intent(this, EmailLoginFormActivity.class);
+        intent.putExtra("Signin", false);
+        startActivity(intent);
     }
 
     @Override
