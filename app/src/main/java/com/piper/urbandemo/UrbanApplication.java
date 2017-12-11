@@ -11,7 +11,5 @@ public class UrbanApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-
-
     }
 }

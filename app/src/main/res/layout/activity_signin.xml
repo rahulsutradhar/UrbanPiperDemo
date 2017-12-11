@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorPrimary">
@@ -17,7 +18,7 @@
             android:gravity="center_horizontal"
             android:text="Hacker News"
             android:textColor="@color/color_white"
-            android:textSize="38dp"
+            android:textSize="38sp"
             android:textStyle="bold" />
 
         <android.support.v7.widget.AppCompatTextView
@@ -27,18 +28,27 @@
             android:gravity="center_horizontal"
             android:text="mobile"
             android:textColor="@color/transparent_white_dark"
-            android:textSize="38dp"
+            android:textSize="38sp"
             android:textStyle="normal" />
 
+        <!-- Progress Bar -->
+        <android.support.v4.widget.ContentLoadingProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="100dp"
+            android:backgroundTint="@color/color_white"
+            app:layout_constraintBottom_toTopOf="parent" />
 
         <!-- BUttons -->
         <LinearLayout
             android:id="@+id/google_siginin_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="80dp"
-            android:layout_marginRight="80dp"
-            android:layout_marginTop="200dp"
+            android:layout_marginLeft="50dp"
+            android:layout_marginRight="50dp"
+            android:layout_marginTop="10dp"
             android:background="@drawable/background_button_google_siginin"
             android:orientation="horizontal"
             android:padding="4dp">
@@ -56,6 +66,46 @@
                 android:scaleType="centerInside"
                 android:src="@drawable/google_logo" />
         </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/email_button_signup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"
+                android:layout_weight="1"
+                android:background="@drawable/background_button_google_siginin"
+                android:padding="8dp"
+                android:text="Email SignUp" />
+
+            <Button
+                android:id="@+id/email_button_signin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_weight="1"
+                android:background="@drawable/background_button_google_siginin"
+                android:padding="8dp"
+                android:text="Email SignIn" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/sign_with_phone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="50dp"
+            android:layout_marginRight="50dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/background_button_google_siginin"
+            android:padding="10dp"
+            android:text="Signin with Phone" />
 
     </LinearLayout>
 
