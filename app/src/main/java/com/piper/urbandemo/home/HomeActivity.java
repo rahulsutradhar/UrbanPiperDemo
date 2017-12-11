@@ -78,7 +78,6 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-
     /**
      * Move to Login Screen
      */
