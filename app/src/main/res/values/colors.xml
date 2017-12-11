@@ -8,4 +8,5 @@
     <color name="color_black">#000000</color>
     <color name="transparent_white_dark">#CCFFFFFF</color>
     <color name="manatee">#979797</color>
+    <color name="background_grey">#e4e4e3</color>
 </resources>

@@ -179,6 +179,7 @@ public class SigninActivity extends AppCompatActivity {
                         .createSignInIntentBuilder()
                         .setIsSmartLockEnabled(false, true)
                         .setAvailableProviders(providers)
+                        .setTheme(R.style.CustomFirebaseTheme)
                         .build(),
                 RC_PHONE_SIGN_IN);
     }
