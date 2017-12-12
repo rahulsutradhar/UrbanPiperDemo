@@ -21,7 +21,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.piper.urbandemo.R;
 import com.piper.urbandemo.UrbanApplication;
-import com.piper.urbandemo.activity.authentication.SigninActivity;
 import com.piper.urbandemo.adapter.TopStoryAdapter;
 import com.piper.urbandemo.helper.Keys;
 import com.piper.urbandemo.helper.PreferenceManager;
@@ -42,9 +41,14 @@ public class HomeActivity extends AppCompatActivity {
     private PreferenceManager preferenceManager;
     private RealmList<TopStory> topStoriesList;
     private TextView title, subtitle;
-    private FrameLayout noItemFound, mainContent, progressBar;
+    private FrameLayout noItemFound, mainContent, progressBar, networkProblem;
     private RecyclerView recyclerView;
     private TopStoryAdapter adapter;
+
+    //for fetching top stories
+    private int index = 0;
+    private static final int MAX_ITEM_FETCH = 10;
+    private boolean trackNetworkFailure = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,7 +93,16 @@ public class HomeActivity extends AppCompatActivity {
         noItemFound = (FrameLayout) findViewById(R.id.noitemfound);
         mainContent = (FrameLayout) findViewById(R.id.main_content);
         progressBar = (FrameLayout) findViewById(R.id.progressLayout);
+        networkProblem = (FrameLayout) findViewById(R.id.network_problem);
         recyclerView = (RecyclerView) findViewById(R.id.list_top_stories);
+
+        networkProblem.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //try to recall data
+                requestTopStories();
+            }
+        });
     }
 
     /**
@@ -131,7 +144,7 @@ public class HomeActivity extends AppCompatActivity {
      */
     public void navigateToLoginScreen() {
         //move to login screen
-        Intent intent = new Intent(this, SigninActivity.class);
+        Intent intent = new Intent(this, com.piper.urbandemo.activity.authentication.SigninActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
@@ -142,6 +155,10 @@ public class HomeActivity extends AppCompatActivity {
      * DO Network call and fetch Top Stories ID
      */
     public void requestTopStories() {
+        networkProblem.setVisibility(View.GONE);
+        mainContent.setVisibility(View.GONE);
+        noItemFound.setVisibility(View.GONE);
+        progressBar.setVisibility(View.VISIBLE);
 
         UrbanApplication.getAPIService().
                 fetchTopStoriesId("pretty")
@@ -151,8 +168,19 @@ public class HomeActivity extends AppCompatActivity {
                         if (response.isSuccessful()) {
                             if (response.body() != null) {
                                 ResponseTopStoryId responseTopStoryId = response.body();
-                                parseStoriesIdAndFetchStory(responseTopStoryId);
-                                Toast.makeText(HomeActivity.this, "Size - " + responseTopStoryId.size(), Toast.LENGTH_SHORT).show();
+
+                                if (responseTopStoryId.size() > 0) {
+                                    //clear this top story list
+                                    topStoriesList.clear();
+                                    //request with individual id anf fetch top stories
+                                    parseStoriesIdAndFetchStory(responseTopStoryId);
+                                } else {
+                                    networkProblem.setVisibility(View.GONE);
+                                    mainContent.setVisibility(View.GONE);
+                                    noItemFound.setVisibility(View.VISIBLE);
+                                    progressBar.setVisibility(View.GONE);
+
+                                }
                             }
                         }
                     }
@@ -160,6 +188,11 @@ public class HomeActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<ResponseTopStoryId> call, Throwable t) {
                         Toast.makeText(HomeActivity.this, "Failed - " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        mainContent.setVisibility(View.GONE);
+                        noItemFound.setVisibility(View.GONE);
+                        progressBar.setVisibility(View.GONE);
+                        networkProblem.setVisibility(View.VISIBLE);
+
                     }
                 });
     }
@@ -167,18 +200,24 @@ public class HomeActivity extends AppCompatActivity {
     /**
      * Parse Each Story
      */
-    public void parseStoriesIdAndFetchStory(ArrayList<Long> topStoriesId) {
-        topStoriesList.clear();
-        for (int i = 0; i < 5; i++) {
-            String id = String.valueOf(topStoriesId.get(i)) + ".json";
-            fetchIndividualStory(id, i);
+    public synchronized void parseStoriesIdAndFetchStory(ArrayList<Long> topStoriesId) {
+
+        if (index > MAX_ITEM_FETCH) {
+            displayTopStory();
+        } else {
+
+            String id = String.valueOf(topStoriesId.get(index)) + ".json";
+            Log.d("NETWORK", "Call number - " + index + " - " + id);
+            fetchIndividualStory(id, topStoriesId);
+            index++;
         }
+
     }
 
     /**
      * Fetch Individual Story
      */
-    public void fetchIndividualStory(String topStoryId, final int index) {
+    public synchronized void fetchIndividualStory(String topStoryId, final ArrayList<Long> topStoriesId) {
 
         UrbanApplication.getAPIService()
                 .fetchTopStory(topStoryId, "pretty")
@@ -190,25 +229,20 @@ public class HomeActivity extends AppCompatActivity {
                             if (response.body() != null) {
                                 ResponseTopStory responseTopStory = response.body();
                                 topStoriesList.add(responseTopStory);
-                                Log.d("INDEX", index + "");
+                                trackNetworkFailure = false;
 
-                                if (index == 4) {
-                                    updateUI();
-                                }
+                                //fetch next top stories
+                                parseStoriesIdAndFetchStory(topStoriesId);
                             }
                         }
                     }
 
                     @Override
                     public void onFailure(Call<ResponseTopStory> call, Throwable t) {
-                        Toast.makeText(HomeActivity.this, "Failed - " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        trackNetworkFailure = true;
+                        parseStoriesIdAndFetchStory(topStoriesId);
                     }
                 });
-    }
-
-    public void updateUI() {
-        Toast.makeText(HomeActivity.this, "Size of Real List " + topStoriesList.size(), Toast.LENGTH_SHORT).show();
-        displayTopStory();
     }
 
 
@@ -217,18 +251,34 @@ public class HomeActivity extends AppCompatActivity {
      */
     public void displayTopStory() {
 
-        mainContent.setVisibility(View.VISIBLE);
-        progressBar.setVisibility(View.GONE);
-        noItemFound.setVisibility(View.GONE);
+        if (topStoriesList.size() > 0) {
+            networkProblem.setVisibility(View.GONE);
+            mainContent.setVisibility(View.VISIBLE);
+            progressBar.setVisibility(View.GONE);
+            noItemFound.setVisibility(View.GONE);
 
-        Toast.makeText(HomeActivity.this, "Display List " + topStoriesList.size(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(HomeActivity.this, "Display List " + topStoriesList.size(), Toast.LENGTH_SHORT).show();
 
-        final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
-        linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-        recyclerView.setLayoutManager(linearLayoutManager);
-        adapter = new TopStoryAdapter(this, topStoriesList);
-        recyclerView.setAdapter(adapter);
+            final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+            linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+            recyclerView.setLayoutManager(linearLayoutManager);
+            adapter = new TopStoryAdapter(this, topStoriesList);
+            recyclerView.setAdapter(adapter);
         /*adapter.setData(topStoriesList);*/
+
+        } else {
+            if (trackNetworkFailure) {
+                networkProblem.setVisibility(View.VISIBLE);
+                mainContent.setVisibility(View.GONE);
+                progressBar.setVisibility(View.GONE);
+                noItemFound.setVisibility(View.GONE);
+            } else {
+                networkProblem.setVisibility(View.GONE);
+                mainContent.setVisibility(View.GONE);
+                progressBar.setVisibility(View.GONE);
+                noItemFound.setVisibility(View.VISIBLE);
+            }
+        }
     }
 
 }
