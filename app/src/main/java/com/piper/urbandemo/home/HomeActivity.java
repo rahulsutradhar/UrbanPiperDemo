@@ -7,15 +7,24 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.piper.urbandemo.R;
+import com.piper.urbandemo.UrbanApplication;
 import com.piper.urbandemo.authentication.SigninActivity;
 import com.piper.urbandemo.helper.Keys;
 import com.piper.urbandemo.helper.PreferenceManager;
+import com.piper.urbandemo.network.Response.ResponseTopStoryId;
+
+import java.util.ArrayList;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -32,6 +41,8 @@ public class HomeActivity extends AppCompatActivity {
 
         //Initialize Preference Manager
         preferenceManager = new PreferenceManager(this);
+
+        requestTopStories();
     }
 
     @Override
@@ -88,4 +99,33 @@ public class HomeActivity extends AppCompatActivity {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
+
+
+    /**
+     * DO Network call and fetch Top Stories ID
+     */
+    public void requestTopStories() {
+
+        UrbanApplication.getAPIService().
+                fetchTopStoriesId("pretty")
+                .enqueue(new Callback<ResponseTopStoryId>() {
+                    @Override
+                    public void onResponse(Call<ResponseTopStoryId> call, Response<ResponseTopStoryId> response) {
+                        if (response.isSuccessful()) {
+                            if (response.body() != null) {
+                                ResponseTopStoryId responseTopStoryId = response.body();
+                                ArrayList<Long> topStoriesId = responseTopStoryId;
+                                Toast.makeText(HomeActivity.this, "Size - " + topStoriesId.size(), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseTopStoryId> call, Throwable t) {
+                        Toast.makeText(HomeActivity.this, "Failed - " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+
 }
