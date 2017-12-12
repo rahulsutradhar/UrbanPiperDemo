@@ -1,4 +1,4 @@
-package com.piper.urbandemo.home;
+package com.piper.urbandemo.activity.home;
 
 import android.content.Intent;
 import android.support.annotation.NonNull;
@@ -21,8 +21,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.piper.urbandemo.R;
 import com.piper.urbandemo.UrbanApplication;
+import com.piper.urbandemo.activity.authentication.SigninActivity;
 import com.piper.urbandemo.adapter.TopStoryAdapter;
-import com.piper.urbandemo.authentication.SigninActivity;
 import com.piper.urbandemo.helper.Keys;
 import com.piper.urbandemo.helper.PreferenceManager;
 import com.piper.urbandemo.model.TopStory;

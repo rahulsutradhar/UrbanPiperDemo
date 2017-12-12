@@ -5,12 +5,15 @@ import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import io.realm.annotations.PrimaryKey;
+
 /**
  * Created by developers on 12/12/17.
  */
 
 public class TopStory implements Serializable {
 
+    @PrimaryKey
     @SerializedName("id")
     private long id;
 
