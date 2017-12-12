@@ -2,13 +2,14 @@ package com.piper.urbandemo.model;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  * Created by developers on 12/12/17.
  */
 
-public class TopStory {
+public class TopStory implements Serializable {
 
     @SerializedName("id")
     private long id;
