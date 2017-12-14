@@ -9,6 +9,8 @@ import com.piper.urbandemo.network.RestClient;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -26,6 +28,8 @@ public class UrbanApplication extends Application {
     private static Retrofit retrofit;
     private static OkHttpClient okHttpClient;
     private static Context mContext;
+    private static Realm realm;
+    private static RealmConfiguration realmConfiguration;
 
     /**
      * RestClient Instance
@@ -40,11 +44,40 @@ public class UrbanApplication extends Application {
         return restClient;
     }
 
+    /**
+     * Get Realm Instance
+     *
+     * @return
+     */
+    public static Realm getRealm() {
+        if (realm == null) {
+            realm = Realm.getInstance(getRealmConfiguration());
+            return realm;
+        }
+        return realm;
+    }
+
+    public static void setRealm(Realm realm) {
+        UrbanApplication.realm = realm;
+    }
+
+    public static RealmConfiguration getRealmConfiguration() {
+        realmConfiguration = new RealmConfiguration.Builder().name("urbanpiper.realm")
+                .deleteRealmIfMigrationNeeded().schemaVersion(1).build();
+        return realmConfiguration;
+    }
+
+
     @Override
     public void onCreate() {
         super.onCreate();
 
         mContext = getApplicationContext();
+
+         /*Local database*/
+        Realm.init(this);
+        getRealm();
+
     }
 
     /**

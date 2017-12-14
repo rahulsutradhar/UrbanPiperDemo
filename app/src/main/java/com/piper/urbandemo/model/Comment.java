@@ -11,7 +11,7 @@ import io.realm.annotations.PrimaryKey;
  * Created by developers on 14/12/17.
  */
 
-public class Comment implements Serializable {
+public class Comment extends RealmObject implements Serializable {
 
     @SerializedName("by")
     private String userName;

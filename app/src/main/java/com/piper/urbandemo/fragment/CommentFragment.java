@@ -5,7 +5,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,13 +13,9 @@ import android.widget.Toast;
 
 import com.piper.urbandemo.R;
 import com.piper.urbandemo.UrbanApplication;
-import com.piper.urbandemo.activity.home.HomeActivity;
 import com.piper.urbandemo.adapter.CommentAdapter;
 import com.piper.urbandemo.helper.CoreGsonUtils;
 import com.piper.urbandemo.model.Comment;
-import com.piper.urbandemo.network.Response.ResponseComment;
-
-import java.util.ArrayList;
 
 import io.realm.RealmList;
 import retrofit2.Call;
@@ -33,7 +28,7 @@ import retrofit2.Response;
 
 public class CommentFragment extends Fragment {
 
-    private ArrayList<Long> commentIds = new ArrayList<>();
+    private RealmList<Long> commentIds = new RealmList<>();
     private RealmList<Comment> comments = new RealmList<>();
     private FrameLayout mainContent, noItemFound, networkLayout, progressBar;
     private View rootView;
@@ -64,7 +59,7 @@ public class CommentFragment extends Fragment {
         commentExist = getArguments().getBoolean("COMMENT_EXIST");
         if (commentExist) {
             String commentidsStr = getArguments().getString("COMMENT_IDS");
-            commentIds = CoreGsonUtils.fromJsontoArrayList(commentidsStr, Long.class);
+            commentIds = CoreGsonUtils.fromJsontoRealmList(commentidsStr, Long.class);
         }
 
         setViews();
@@ -135,14 +130,14 @@ public class CommentFragment extends Fragment {
 
         UrbanApplication.getAPIService()
                 .fetchComment(commentId, "pretty")
-                .enqueue(new Callback<ResponseComment>() {
+                .enqueue(new Callback<Comment>() {
                     @Override
-                    public void onResponse(Call<ResponseComment> call, Response<ResponseComment> response) {
+                    public void onResponse(Call<Comment> call, Response<Comment> response) {
 
                         if (response.isSuccessful()) {
                             if (response.body() != null) {
-                                ResponseComment responseComment = response.body();
-                                comments.add(responseComment);
+                                Comment comment = response.body();
+                                comments.add(comment);
                                 trackNetwork = false;
 
                                 //fetch next top stories
@@ -152,7 +147,7 @@ public class CommentFragment extends Fragment {
                     }
 
                     @Override
-                    public void onFailure(Call<ResponseComment> call, Throwable t) {
+                    public void onFailure(Call<Comment> call, Throwable t) {
                         trackNetwork = true;
                         requestCommentData();
                     }

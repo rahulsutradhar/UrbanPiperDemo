@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,7 +24,6 @@ import com.piper.urbandemo.adapter.TopStoryAdapter;
 import com.piper.urbandemo.helper.Keys;
 import com.piper.urbandemo.helper.PreferenceManager;
 import com.piper.urbandemo.model.TopStory;
-import com.piper.urbandemo.network.Response.ResponseTopStory;
 import com.piper.urbandemo.network.Response.ResponseTopStoryId;
 
 import java.util.ArrayList;
@@ -226,14 +224,14 @@ public class HomeActivity extends AppCompatActivity {
 
         UrbanApplication.getAPIService()
                 .fetchTopStory(topStoryId, "pretty")
-                .enqueue(new Callback<ResponseTopStory>() {
+                .enqueue(new Callback<TopStory>() {
                     @Override
-                    public void onResponse(Call<ResponseTopStory> call, Response<ResponseTopStory> response) {
+                    public void onResponse(Call<TopStory> call, Response<TopStory> response) {
 
                         if (response.isSuccessful()) {
                             if (response.body() != null) {
-                                ResponseTopStory responseTopStory = response.body();
-                                topStoriesList.add(responseTopStory);
+                                TopStory topStory = response.body();
+                                topStoriesList.add(topStory);
                                 trackNetworkFailure = false;
 
                                 //fetch next top stories
@@ -243,7 +241,7 @@ public class HomeActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onFailure(Call<ResponseTopStory> call, Throwable t) {
+                    public void onFailure(Call<TopStory> call, Throwable t) {
                         trackNetworkFailure = true;
                         parseStoriesIdAndFetchStory();
                     }
