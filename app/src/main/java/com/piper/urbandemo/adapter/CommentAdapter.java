@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.piper.urbandemo.R;
+import com.piper.urbandemo.helper.DateHelper;
 import com.piper.urbandemo.model.Comment;
 
 import io.realm.RealmList;
@@ -87,6 +88,7 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             try {
                 username.setText(comment.getUserName());
                 description.setText(Html.fromHtml(comment.getDescription()));
+                timeStamp.setText(DateHelper.parseDate(String.valueOf(comment.getTimeStamp())));
 
             } catch (NullPointerException npe) {
                 npe.printStackTrace();

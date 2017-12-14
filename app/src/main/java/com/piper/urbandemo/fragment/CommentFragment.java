@@ -110,7 +110,7 @@ public class CommentFragment extends Fragment {
     /**
      * Fetch data
      */
-    public void requestCommentData() {
+    public synchronized void requestCommentData() {
         if (index >= MAX_ITEM_FETCH) {
             displayComment();
         } else {
@@ -126,7 +126,7 @@ public class CommentFragment extends Fragment {
      *
      * @param commentId
      */
-    public void fetchIndividualComment(String commentId) {
+    public synchronized void fetchIndividualComment(String commentId) {
 
         UrbanApplication.getAPIService()
                 .fetchComment(commentId, "pretty")
@@ -140,8 +140,10 @@ public class CommentFragment extends Fragment {
                                 comments.add(comment);
                                 trackNetwork = false;
 
-                                //fetch next top stories
-                                requestCommentData();
+                                if (getActivity() != null) {
+                                    //fetch next top stories
+                                    requestCommentData();
+                                }
                             }
                         }
                     }
@@ -149,7 +151,9 @@ public class CommentFragment extends Fragment {
                     @Override
                     public void onFailure(Call<Comment> call, Throwable t) {
                         trackNetwork = true;
-                        requestCommentData();
+                        if (getActivity() != null) {
+                            requestCommentData();
+                        }
                     }
                 });
 
@@ -160,29 +164,31 @@ public class CommentFragment extends Fragment {
      */
     public void displayComment() {
 
-        if (commentIds.size() > 0) {
-            mainContent.setVisibility(View.VISIBLE);
-            noItemFound.setVisibility(View.GONE);
-            networkLayout.setVisibility(View.GONE);
-            progressBar.setVisibility(View.GONE);
-
-            Toast.makeText(getActivity(), "Fetched " + comments.size() + " comments", Toast.LENGTH_SHORT).show();
-
-            final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
-            linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-            recyclerView.setLayoutManager(linearLayoutManager);
-            adapter = new CommentAdapter(getActivity(), comments);
-            recyclerView.setAdapter(adapter);
-        } else {
-            if (trackNetwork) {
+        if (getActivity() != null) {
+            if (commentIds.size() > 0) {
+                mainContent.setVisibility(View.VISIBLE);
                 noItemFound.setVisibility(View.GONE);
-                networkLayout.setVisibility(View.VISIBLE);
-            } else {
-                noItemFound.setVisibility(View.VISIBLE);
                 networkLayout.setVisibility(View.GONE);
+                progressBar.setVisibility(View.GONE);
+
+                Toast.makeText(getActivity(), "Fetched " + comments.size() + " comments", Toast.LENGTH_SHORT).show();
+
+                final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
+                linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+                recyclerView.setLayoutManager(linearLayoutManager);
+                adapter = new CommentAdapter(getActivity(), comments);
+                recyclerView.setAdapter(adapter);
+            } else {
+                if (trackNetwork) {
+                    noItemFound.setVisibility(View.GONE);
+                    networkLayout.setVisibility(View.VISIBLE);
+                } else {
+                    noItemFound.setVisibility(View.VISIBLE);
+                    networkLayout.setVisibility(View.GONE);
+                }
+                mainContent.setVisibility(View.GONE);
+                progressBar.setVisibility(View.GONE);
             }
-            mainContent.setVisibility(View.GONE);
-            progressBar.setVisibility(View.GONE);
         }
     }
 }

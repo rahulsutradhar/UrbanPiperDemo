@@ -21,6 +21,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.piper.urbandemo.R;
 import com.piper.urbandemo.UrbanApplication;
 import com.piper.urbandemo.adapter.TopStoryAdapter;
+import com.piper.urbandemo.helper.DatabaseHelper;
+import com.piper.urbandemo.helper.DateHelper;
 import com.piper.urbandemo.helper.Keys;
 import com.piper.urbandemo.helper.PreferenceManager;
 import com.piper.urbandemo.model.TopStory;
@@ -48,6 +50,7 @@ public class HomeActivity extends AppCompatActivity {
     private int index = 0;
     private static final int MAX_ITEM_FETCH = 10;
     private boolean trackNetworkFailure = false;
+    private boolean isDataFetchedFromCache = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +66,9 @@ public class HomeActivity extends AppCompatActivity {
         //Initialize Preference Manager
         preferenceManager = new PreferenceManager(this);
 
-        requestTopStories();
+        //fetch Top Stories
+        checkAvailablitiyFromCache();
+
     }
 
     @Override
@@ -102,6 +107,7 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //try to recall data
+                index = 0;
                 requestTopStories();
             }
         });
@@ -140,6 +146,10 @@ public class HomeActivity extends AppCompatActivity {
                         }
                     });
         }
+
+        //clear all preferences and database
+        DatabaseHelper.clearTopStories();
+        preferenceManager.resetPreferences();
     }
 
     /**
@@ -153,39 +163,81 @@ public class HomeActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    /**
+     * Check if data is Available from Cache else Request Server
+     */
+    public void checkAvailablitiyFromCache() {
+        if (DatabaseHelper.getSizeTopStories() > 0) {
+            isDataFetchedFromCache = true;
+            topStoriesList.clear();
+            topStoriesList.addAll(DatabaseHelper.getTopStories());
+            displayTopStory();
+
+            //display laste Update time
+            displayLastUpdateTime();
+        } else {
+            isDataFetchedFromCache = false;
+            //request Server
+            requestTopStories();
+        }
+    }
+
+    /**
+     * Display Last Update Time
+     */
+    public void displayLastUpdateTime() {
+        String lastUpdateTimeStamp = DateHelper.parseDate(preferenceManager.getStringPref(Keys.LAST_UPDATE_TIMESTAMP));
+        subtitle.setText("Updated " + lastUpdateTimeStamp);
+    }
+
 
     /**
      * DO Network call and fetch Top Stories ID
      */
     public void requestTopStories() {
+        //clear top story ids
+        topStoryIds.clear();
+        //clear this top story list
+        topStoriesList.clear();
+
+        //update views
         networkProblem.setVisibility(View.GONE);
         mainContent.setVisibility(View.GONE);
         noItemFound.setVisibility(View.GONE);
         progressBar.setVisibility(View.VISIBLE);
 
+        //rest call to fetch data
         UrbanApplication.getAPIService().
                 fetchTopStoriesId("pretty")
                 .enqueue(new Callback<ResponseTopStoryId>() {
                     @Override
                     public void onResponse(Call<ResponseTopStoryId> call, Response<ResponseTopStoryId> response) {
-                        if (response.isSuccessful()) {
-                            if (response.body() != null) {
-                                ResponseTopStoryId responseTopStoryId = response.body();
+                        try {
+                            if (response.isSuccessful()) {
+                                if (response.body() != null) {
+                                    ResponseTopStoryId responseTopStoryId = response.body();
 
-                                if (responseTopStoryId.size() > 0) {
-                                    //clear this top story list
-                                    topStoriesList.clear();
-                                    //request with individual id anf fetch top stories
-                                    topStoryIds.addAll(responseTopStoryId);
-                                    parseStoriesIdAndFetchStory();
-                                } else {
-                                    networkProblem.setVisibility(View.GONE);
-                                    mainContent.setVisibility(View.GONE);
-                                    noItemFound.setVisibility(View.VISIBLE);
-                                    progressBar.setVisibility(View.GONE);
+                                    if (responseTopStoryId.size() > 0) {
+                                        //request with individual id anf fetch top stories
+                                        topStoryIds.addAll(responseTopStoryId);
 
+                                        //check fi the activity is not destroyed
+                                        if (HomeActivity.this != null) {
+                                            parseStoriesIdAndFetchStory();
+                                        }
+                                    } else {
+                                        networkProblem.setVisibility(View.GONE);
+                                        mainContent.setVisibility(View.GONE);
+                                        noItemFound.setVisibility(View.VISIBLE);
+                                        progressBar.setVisibility(View.GONE);
+                                    }
                                 }
                             }
+                        } catch (NullPointerException npe) {
+                            networkProblem.setVisibility(View.GONE);
+                            mainContent.setVisibility(View.GONE);
+                            noItemFound.setVisibility(View.VISIBLE);
+                            progressBar.setVisibility(View.GONE);
                         }
                     }
 
@@ -207,7 +259,12 @@ public class HomeActivity extends AppCompatActivity {
     public synchronized void parseStoriesIdAndFetchStory() {
 
         if (index >= MAX_ITEM_FETCH) {
+            //capture time when last updated
+            captureCurrentTime();
+            //display the list
             displayTopStory();
+            //display the time
+            displayLastUpdateTime();
         } else {
 
             String id = String.valueOf(topStoryIds.get(index)) + ".json";
@@ -234,8 +291,11 @@ public class HomeActivity extends AppCompatActivity {
                                 topStoriesList.add(topStory);
                                 trackNetworkFailure = false;
 
-                                //fetch next top stories
-                                parseStoriesIdAndFetchStory();
+                                //check if the activity is not destroyed
+                                if (HomeActivity.this != null) {
+                                    //fetch next top stories
+                                    parseStoriesIdAndFetchStory();
+                                }
                             }
                         }
                     }
@@ -243,7 +303,11 @@ public class HomeActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<TopStory> call, Throwable t) {
                         trackNetworkFailure = true;
-                        parseStoriesIdAndFetchStory();
+
+                        //check if the activity is not destroyed
+                        if (HomeActivity.this != null) {
+                            parseStoriesIdAndFetchStory();
+                        }
                     }
                 });
     }
@@ -254,31 +318,39 @@ public class HomeActivity extends AppCompatActivity {
      */
     public void displayTopStory() {
 
-        if (topStoriesList.size() > 0) {
-            networkProblem.setVisibility(View.GONE);
-            mainContent.setVisibility(View.VISIBLE);
-            progressBar.setVisibility(View.GONE);
-            noItemFound.setVisibility(View.GONE);
-
-            Toast.makeText(HomeActivity.this, "Fetched " + topStoriesList.size() + " items", Toast.LENGTH_SHORT).show();
-
-            final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
-            linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-            recyclerView.setLayoutManager(linearLayoutManager);
-            adapter = new TopStoryAdapter(this, topStoriesList);
-            recyclerView.setAdapter(adapter);
-
-        } else {
-            if (trackNetworkFailure) {
-                networkProblem.setVisibility(View.VISIBLE);
-                mainContent.setVisibility(View.GONE);
+        //check if the activity is not destroyed
+        if (HomeActivity.this != null) {
+            if (topStoriesList.size() > 0) {
+                networkProblem.setVisibility(View.GONE);
+                mainContent.setVisibility(View.VISIBLE);
                 progressBar.setVisibility(View.GONE);
                 noItemFound.setVisibility(View.GONE);
+
+                Toast.makeText(HomeActivity.this, "Fetched " + topStoriesList.size() + " items", Toast.LENGTH_SHORT).show();
+
+                final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+                linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+                recyclerView.setLayoutManager(linearLayoutManager);
+                adapter = new TopStoryAdapter(this, topStoriesList);
+                recyclerView.setAdapter(adapter);
+
+                //data fetched from server save locally
+                if (!isDataFetchedFromCache) {
+                    DatabaseHelper.addTopStories(topStoriesList);
+                }
+
             } else {
-                networkProblem.setVisibility(View.GONE);
-                mainContent.setVisibility(View.GONE);
-                progressBar.setVisibility(View.GONE);
-                noItemFound.setVisibility(View.VISIBLE);
+                if (trackNetworkFailure) {
+                    networkProblem.setVisibility(View.VISIBLE);
+                    mainContent.setVisibility(View.GONE);
+                    progressBar.setVisibility(View.GONE);
+                    noItemFound.setVisibility(View.GONE);
+                } else {
+                    networkProblem.setVisibility(View.GONE);
+                    mainContent.setVisibility(View.GONE);
+                    progressBar.setVisibility(View.GONE);
+                    noItemFound.setVisibility(View.VISIBLE);
+                }
             }
         }
     }
@@ -287,7 +359,25 @@ public class HomeActivity extends AppCompatActivity {
      * Refresh List Data and fetch again from server
      */
     public void refreshListData() {
+        index = 0;
+        isDataFetchedFromCache = false;
+        //remove data from database
+        DatabaseHelper.clearTopStories();
 
+        //request data from server
+        requestTopStories();
+
+    }
+
+    /**
+     * Capture current time in Mili seconds
+     */
+    public void captureCurrentTime() {
+        Long tsLong = System.currentTimeMillis() / 1000;
+        String timestamp = tsLong.toString();
+
+        //put the data in preference manager
+        preferenceManager.setStringPref(Keys.LAST_UPDATE_TIMESTAMP, timestamp);
     }
 
 }

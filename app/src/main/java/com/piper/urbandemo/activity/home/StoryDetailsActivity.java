@@ -18,6 +18,7 @@ import com.piper.urbandemo.adapter.ViewPagerAdapter;
 import com.piper.urbandemo.fragment.ArticleFragment;
 import com.piper.urbandemo.fragment.CommentFragment;
 import com.piper.urbandemo.helper.CoreGsonUtils;
+import com.piper.urbandemo.helper.DateHelper;
 import com.piper.urbandemo.model.TopStory;
 
 import org.w3c.dom.Text;
@@ -95,6 +96,7 @@ public class StoryDetailsActivity extends AppCompatActivity {
             urlText.setText("");
         }
         usernameText.setText(topStory.getUserName());
+        timestampText.setText(DateHelper.parseDate(String.valueOf(topStory.getTimeStamp())));
     }
 
 

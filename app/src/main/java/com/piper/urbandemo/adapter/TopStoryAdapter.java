@@ -12,6 +12,8 @@ import com.google.gson.Gson;
 import com.piper.urbandemo.R;
 import com.piper.urbandemo.UrbanApplication;
 import com.piper.urbandemo.activity.home.StoryDetailsActivity;
+import com.piper.urbandemo.helper.CoreGsonUtils;
+import com.piper.urbandemo.helper.DateHelper;
 import com.piper.urbandemo.model.TopStory;
 
 import io.realm.RealmList;
@@ -118,6 +120,8 @@ public class TopStoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
                     commentCount.setText(String.valueOf(topStory.getTotalCommentCount()));
 
+                    timeStamp.setText(DateHelper.parseDate(String.valueOf(topStory.getTimeStamp())));
+
                     itemView.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -136,13 +140,12 @@ public class TopStoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
          */
         public void navigateToStoryDetailsActivity(TopStory topStory) {
 
-            Gson gson = new Gson();
-            String strTopStory = gson.toJson(topStory);
+            String strTopStory = CoreGsonUtils.toJson(topStory);
 
             //TODO: pass thie object and fetch comments
             Intent intent = new Intent(UrbanApplication.getAppContext(), StoryDetailsActivity.class);
             intent.putExtra("TOP_STORY", strTopStory);
-            UrbanApplication.getAppContext().startActivity(intent);
+            context.startActivity(intent);
         }
     }
 }
