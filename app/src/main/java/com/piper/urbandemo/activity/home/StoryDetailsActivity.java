@@ -16,6 +16,7 @@ import com.piper.urbandemo.R;
 import com.piper.urbandemo.adapter.ViewPagerAdapter;
 import com.piper.urbandemo.fragment.ArticleFragment;
 import com.piper.urbandemo.fragment.CommentFragment;
+import com.piper.urbandemo.helper.CoreGsonUtils;
 import com.piper.urbandemo.model.TopStory;
 
 import org.w3c.dom.Text;
@@ -64,7 +65,6 @@ public class StoryDetailsActivity extends AppCompatActivity {
         setViews();
     }
 
-
     public void setViews() {
         tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         pager = (ViewPager) findViewById(R.id.pager);
@@ -80,7 +80,7 @@ public class StoryDetailsActivity extends AppCompatActivity {
 
         collapsingToolbarLayout.setTitle(topStory.getTitle());
         collapsingToolbarLayout.setExpandedTitleColor(getResources().getColor(R.color.fui_transparent)); // transperent color = #00000000
-        collapsingToolbarLayout.setCollapsedTitleTextColor(Color.rgb(0, 0, 0));
+        collapsingToolbarLayout.setCollapsedTitleTextColor(Color.rgb(255, 255, 255));
 
         //set values
         titleText.setText(topStory.getTitle());
@@ -90,7 +90,7 @@ public class StoryDetailsActivity extends AppCompatActivity {
             urlText.setText("");
         }
         usernameText.setText(topStory.getUserName());
-        
+
 
     }
 
@@ -105,12 +105,36 @@ public class StoryDetailsActivity extends AppCompatActivity {
 
         //create first fragment
         CommentFragment commentFragment = new CommentFragment();
+        //passsing data
+        Bundle args1 = new Bundle();
+        if (topStory.getCommentIds() != null) {
+            if (topStory.getCommentIds().size() > 0) {
+                args1.putBoolean("COMMENT_EXIST", true);
+                String commentString = CoreGsonUtils.toJson(topStory.getCommentIds());
+                args1.putCharSequence("COMMENT_IDS", commentString);
+            } else {
+                args1.putBoolean("COMMENT_EXIST", false);
+            }
+        } else {
+            args1.putBoolean("COMMENT_EXIST", false);
+        }
+        commentFragment.setArguments(args1);
         adapter.addFragment(commentFragment);
+
 
         //create Second frgament
         ArticleFragment articleFragment = new ArticleFragment();
         Bundle args = new Bundle();
-        args.putCharSequence("URL", topStory.getType());
+        if (topStory.getUrl() != null) {
+            if (!topStory.getUrl().isEmpty()) {
+                args.putCharSequence("URL", topStory.getUrl());
+                args.putBoolean("URL_EXIST", true);
+            } else {
+                args.putBoolean("URL_EXIST", false);
+            }
+        } else {
+            args.putBoolean("URL_EXIST", false);
+        }
         articleFragment.setArguments(args);
         adapter.addFragment(articleFragment);
 

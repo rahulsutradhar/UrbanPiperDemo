@@ -44,6 +44,7 @@ public class HomeActivity extends AppCompatActivity {
     private FrameLayout noItemFound, mainContent, progressBar, networkProblem;
     private RecyclerView recyclerView;
     private TopStoryAdapter adapter;
+    private ArrayList<Long> topStoryIds;
 
     //for fetching top stories
     private int index = 0;
@@ -110,6 +111,7 @@ public class HomeActivity extends AppCompatActivity {
      */
     public void setVaribles() {
         topStoriesList = new RealmList<>();
+        topStoryIds = new ArrayList<>();
     }
 
     public void doSignout() {
@@ -173,7 +175,8 @@ public class HomeActivity extends AppCompatActivity {
                                     //clear this top story list
                                     topStoriesList.clear();
                                     //request with individual id anf fetch top stories
-                                    parseStoriesIdAndFetchStory(responseTopStoryId);
+                                    topStoryIds.addAll(responseTopStoryId);
+                                    parseStoriesIdAndFetchStory();
                                 } else {
                                     networkProblem.setVisibility(View.GONE);
                                     mainContent.setVisibility(View.GONE);
@@ -200,15 +203,15 @@ public class HomeActivity extends AppCompatActivity {
     /**
      * Parse Each Story
      */
-    public synchronized void parseStoriesIdAndFetchStory(ArrayList<Long> topStoriesId) {
+    public synchronized void parseStoriesIdAndFetchStory() {
 
-        if (index > MAX_ITEM_FETCH) {
+        if (index >= MAX_ITEM_FETCH) {
             displayTopStory();
         } else {
 
-            String id = String.valueOf(topStoriesId.get(index)) + ".json";
+            String id = String.valueOf(topStoryIds.get(index)) + ".json";
             Log.d("NETWORK", "Call number - " + index + " - " + id);
-            fetchIndividualStory(id, topStoriesId);
+            fetchIndividualStory(id);
             index++;
         }
 
@@ -217,7 +220,7 @@ public class HomeActivity extends AppCompatActivity {
     /**
      * Fetch Individual Story
      */
-    public synchronized void fetchIndividualStory(String topStoryId, final ArrayList<Long> topStoriesId) {
+    public synchronized void fetchIndividualStory(String topStoryId) {
 
         UrbanApplication.getAPIService()
                 .fetchTopStory(topStoryId, "pretty")
@@ -232,7 +235,7 @@ public class HomeActivity extends AppCompatActivity {
                                 trackNetworkFailure = false;
 
                                 //fetch next top stories
-                                parseStoriesIdAndFetchStory(topStoriesId);
+                                parseStoriesIdAndFetchStory();
                             }
                         }
                     }
@@ -240,7 +243,7 @@ public class HomeActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<ResponseTopStory> call, Throwable t) {
                         trackNetworkFailure = true;
-                        parseStoriesIdAndFetchStory(topStoriesId);
+                        parseStoriesIdAndFetchStory();
                     }
                 });
     }

@@ -3,11 +3,27 @@ package com.piper.urbandemo.fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import com.piper.urbandemo.R;
+import com.piper.urbandemo.UrbanApplication;
+import com.piper.urbandemo.adapter.CommentAdapter;
+import com.piper.urbandemo.helper.CoreGsonUtils;
+import com.piper.urbandemo.model.Comment;
+import com.piper.urbandemo.network.Response.ResponseComment;
+
+import java.util.ArrayList;
+
+import io.realm.RealmList;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * Created by developers on 13/12/17.
@@ -15,13 +31,22 @@ import com.piper.urbandemo.R;
 
 public class CommentFragment extends Fragment {
 
+    private ArrayList<Long> commentIds = new ArrayList<>();
+    private RealmList<Comment> comments = new RealmList<>();
+    private FrameLayout mainContent, noItemFound, networkLayout, progressBar;
+    private View rootView;
+    private RecyclerView recyclerView;
+    private CommentAdapter adapter;
+    private int MAX_ITEM_FETCH = 15;
+    private int index = 0;
+    private boolean commentExist = false;
+    private boolean trackNetwork = false;
+
+    /**
+     * Constructor
+     */
     public CommentFragment() {
 
-    }
-
-    public static CommentFragment newInstance() {
-        CommentFragment commentFragment = new CommentFragment();
-        return commentFragment;
     }
 
     @Override
@@ -32,12 +57,134 @@ public class CommentFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_comments, container, false);
+        rootView = inflater.inflate(R.layout.fragment_comments, container, false);
+
+        commentExist = getArguments().getBoolean("COMMENT_EXIST");
+        if (commentExist) {
+            String commentidsStr = getArguments().getString("COMMENT_IDS");
+            commentIds = CoreGsonUtils.fromJsontoArrayList(commentidsStr, Long.class);
+        }
+
+        setViews();
         return rootView;
+    }
+
+    /**
+     * Initilize views
+     */
+    public void setViews() {
+        mainContent = (FrameLayout) rootView.findViewById(R.id.main_content);
+        noItemFound = (FrameLayout) rootView.findViewById(R.id.noitemfound);
+        networkLayout = (FrameLayout) rootView.findViewById(R.id.network_problem);
+        progressBar = (FrameLayout) rootView.findViewById(R.id.progressLayout);
+        recyclerView = (RecyclerView) rootView.findViewById(R.id.list_comment);
+
+        networkLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                requestCommentData();
+            }
+        });
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        if (commentExist) {
+            if (commentIds.size() < MAX_ITEM_FETCH) {
+                MAX_ITEM_FETCH = commentIds.size();
+            }
+            mainContent.setVisibility(View.GONE);
+            noItemFound.setVisibility(View.GONE);
+            networkLayout.setVisibility(View.GONE);
+            progressBar.setVisibility(View.VISIBLE);
+
+            //request data from server
+            requestCommentData();
+        } else {
+            mainContent.setVisibility(View.GONE);
+            noItemFound.setVisibility(View.VISIBLE);
+            networkLayout.setVisibility(View.GONE);
+            progressBar.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * Fetch data
+     */
+    public void requestCommentData() {
+        if (index >= MAX_ITEM_FETCH) {
+            displayComment();
+        } else {
+
+            String id = String.valueOf(commentIds.get(index)) + ".json";
+            Log.d("NETWORK", "Call number - " + index + " - " + id);
+            fetchIndividualComment(id);
+            index++;
+        }
+    }
+
+    /**
+     * Fetch Individual Comment
+     *
+     * @param commentId
+     */
+    public void fetchIndividualComment(String commentId) {
+
+        UrbanApplication.getAPIService()
+                .fetchComment(commentId, "pretty")
+                .enqueue(new Callback<ResponseComment>() {
+                    @Override
+                    public void onResponse(Call<ResponseComment> call, Response<ResponseComment> response) {
+
+                        if (response.isSuccessful()) {
+                            if (response.body() != null) {
+                                ResponseComment responseComment = response.body();
+                                comments.add(responseComment);
+                                trackNetwork = false;
+
+                                //fetch next top stories
+                                requestCommentData();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseComment> call, Throwable t) {
+                        trackNetwork = true;
+                        requestCommentData();
+                    }
+                });
+
+    }
+
+    /**
+     * Display List
+     */
+    public void displayComment() {
+
+        if (commentIds.size() > 0) {
+            mainContent.setVisibility(View.VISIBLE);
+            noItemFound.setVisibility(View.GONE);
+            networkLayout.setVisibility(View.GONE);
+            progressBar.setVisibility(View.GONE);
+
+            final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
+            linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+            recyclerView.setLayoutManager(linearLayoutManager);
+            adapter = new CommentAdapter(getActivity(), comments);
+            recyclerView.setAdapter(adapter);
+        } else {
+            if (trackNetwork) {
+                noItemFound.setVisibility(View.GONE);
+                networkLayout.setVisibility(View.VISIBLE);
+            } else {
+                noItemFound.setVisibility(View.VISIBLE);
+                networkLayout.setVisibility(View.GONE);
+            }
+            mainContent.setVisibility(View.GONE);
+            progressBar.setVisibility(View.GONE);
+        }
     }
 }
