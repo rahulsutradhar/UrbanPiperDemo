@@ -1,4 +1,4 @@
-package com.piper.urbandemo.authentication;
+package com.piper.urbandemo.activity.authentication;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -29,7 +29,7 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import com.piper.urbandemo.R;
 import com.piper.urbandemo.helper.Keys;
 import com.piper.urbandemo.helper.PreferenceManager;
-import com.piper.urbandemo.home.HomeActivity;
+import com.piper.urbandemo.activity.home.HomeActivity;
 
 import java.util.Arrays;
 import java.util.List;
@@ -179,6 +179,7 @@ public class SigninActivity extends AppCompatActivity {
                         .createSignInIntentBuilder()
                         .setIsSmartLockEnabled(false, true)
                         .setAvailableProviders(providers)
+                        .setTheme(R.style.CustomFirebaseTheme)
                         .build(),
                 RC_PHONE_SIGN_IN);
     }

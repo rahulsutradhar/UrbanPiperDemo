@@ -32,14 +32,13 @@
             android:textStyle="normal" />
 
         <!-- Progress Bar -->
-        <android.support.v4.widget.ContentLoadingProgressBar
+        <ProgressBar
             android:id="@+id/progressBar"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_gravity="center_horizontal"
+            android:layout_gravity="center"
             android:layout_marginTop="100dp"
-            android:backgroundTint="@color/color_white"
-            app:layout_constraintBottom_toTopOf="parent" />
+            android:backgroundTint="@color/color_white" />
 
         <!-- BUttons -->
         <LinearLayout

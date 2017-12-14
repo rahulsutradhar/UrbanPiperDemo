@@ -52,6 +52,16 @@ dependencies {
 
     //Firebase UI
     compile 'com.firebaseui:firebase-ui-auth:3.1.0'
+
+    /**
+     * Network Library Retrofit
+     */
+    compile 'com.squareup.retrofit2:retrofit:2.3.0'
+    compile 'com.squareup.retrofit2:converter-gson:2.3.0'
+    compile 'com.squareup.okhttp3:okhttp-urlconnection:3.6.0'
+    compile 'com.squareup.okhttp3:okhttp:3.6.0'
+    compile 'com.squareup.okhttp3:logging-interceptor:3.6.0'
 }
 
 apply plugin: 'com.google.gms.google-services'
+apply plugin: 'realm-android'

@@ -1,4 +1,4 @@
-package com.piper.urbandemo.authentication;
+package com.piper.urbandemo.activity.authentication;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -19,7 +19,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.piper.urbandemo.R;
 import com.piper.urbandemo.helper.Keys;
 import com.piper.urbandemo.helper.PreferenceManager;
-import com.piper.urbandemo.home.HomeActivity;
+import com.piper.urbandemo.activity.home.HomeActivity;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
