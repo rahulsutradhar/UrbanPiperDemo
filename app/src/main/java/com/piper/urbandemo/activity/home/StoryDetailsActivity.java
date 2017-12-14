@@ -54,7 +54,7 @@ public class StoryDetailsActivity extends AppCompatActivity {
         String strTopStory = getIntent().getExtras().getString("TOP_STORY");
         Gson gson = new Gson();
         topStory = gson.fromJson(strTopStory, TopStory.class);
-        
+
         //initilaize views
         setViews();
     }
@@ -95,8 +95,6 @@ public class StoryDetailsActivity extends AppCompatActivity {
             urlText.setText("");
         }
         usernameText.setText(topStory.getUserName());
-
-
     }
 
 

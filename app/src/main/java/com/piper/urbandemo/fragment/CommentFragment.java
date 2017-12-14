@@ -171,7 +171,7 @@ public class CommentFragment extends Fragment {
             networkLayout.setVisibility(View.GONE);
             progressBar.setVisibility(View.GONE);
 
-            Toast.makeText(getActivity(), "Fetched " + commentIds.size() + " comments", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), "Fetched " + comments.size() + " comments", Toast.LENGTH_SHORT).show();
 
             final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
             linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);

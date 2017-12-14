@@ -16,7 +16,7 @@
         android:padding="5dp"
         android:text="56 COMMENT"
         android:textColor="@color/color_white"
-        android:textSize="18sp"
+        android:textSize="17sp"
         android:textStyle="bold" />
 
 
