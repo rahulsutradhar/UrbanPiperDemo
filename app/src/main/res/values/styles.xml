@@ -24,4 +24,9 @@
         <item name="android:windowBackground">@color/background_grey</item>
     </style>
 
+    <style name="MainActionBar.Popup" parent="ThemeOverlay.AppCompat.Light">
+        <item name="android:colorBackground">@color/color_white</item>
+        <item name="android:textColor">@color/colorPrimary</item>
+    </style>
+
 </resources>

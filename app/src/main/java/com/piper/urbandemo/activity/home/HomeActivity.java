@@ -78,7 +78,10 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        if (item.getItemId() == R.id.action_signout) {
+        if (item.getItemId() == R.id.action_refresh) {
+            //refresh data;
+            refreshListData();
+        } else if (item.getItemId() == R.id.action_signout) {
             //do signout operation
             doSignout();
         }
@@ -210,7 +213,6 @@ public class HomeActivity extends AppCompatActivity {
         } else {
 
             String id = String.valueOf(topStoryIds.get(index)) + ".json";
-            Log.d("NETWORK", "Call number - " + index + " - " + id);
             fetchIndividualStory(id);
             index++;
         }
@@ -260,14 +262,13 @@ public class HomeActivity extends AppCompatActivity {
             progressBar.setVisibility(View.GONE);
             noItemFound.setVisibility(View.GONE);
 
-            Toast.makeText(HomeActivity.this, "Display List " + topStoriesList.size(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(HomeActivity.this, "Fetched " + topStoriesList.size() + " items", Toast.LENGTH_SHORT).show();
 
             final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
             linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
             recyclerView.setLayoutManager(linearLayoutManager);
             adapter = new TopStoryAdapter(this, topStoriesList);
             recyclerView.setAdapter(adapter);
-        /*adapter.setData(topStoriesList);*/
 
         } else {
             if (trackNetworkFailure) {
@@ -282,6 +283,13 @@ public class HomeActivity extends AppCompatActivity {
                 noItemFound.setVisibility(View.VISIBLE);
             }
         }
+    }
+
+    /**
+     * Refresh List Data and fetch again from server
+     */
+    public void refreshListData() {
+
     }
 
 }

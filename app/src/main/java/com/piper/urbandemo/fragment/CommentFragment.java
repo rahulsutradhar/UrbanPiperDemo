@@ -10,9 +10,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import com.piper.urbandemo.R;
 import com.piper.urbandemo.UrbanApplication;
+import com.piper.urbandemo.activity.home.HomeActivity;
 import com.piper.urbandemo.adapter.CommentAdapter;
 import com.piper.urbandemo.helper.CoreGsonUtils;
 import com.piper.urbandemo.model.Comment;
@@ -119,7 +121,6 @@ public class CommentFragment extends Fragment {
         } else {
 
             String id = String.valueOf(commentIds.get(index)) + ".json";
-            Log.d("NETWORK", "Call number - " + index + " - " + id);
             fetchIndividualComment(id);
             index++;
         }
@@ -169,6 +170,8 @@ public class CommentFragment extends Fragment {
             noItemFound.setVisibility(View.GONE);
             networkLayout.setVisibility(View.GONE);
             progressBar.setVisibility(View.GONE);
+
+            Toast.makeText(getActivity(), "Fetched " + commentIds.size() + " comments", Toast.LENGTH_SHORT).show();
 
             final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
             linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
