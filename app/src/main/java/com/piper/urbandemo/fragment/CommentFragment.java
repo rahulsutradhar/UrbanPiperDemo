@@ -15,7 +15,10 @@ import com.piper.urbandemo.R;
 import com.piper.urbandemo.UrbanApplication;
 import com.piper.urbandemo.adapter.CommentAdapter;
 import com.piper.urbandemo.helper.CoreGsonUtils;
+import com.piper.urbandemo.helper.DatabaseHelper;
 import com.piper.urbandemo.model.Comment;
+
+import java.util.ArrayList;
 
 import io.realm.RealmList;
 import retrofit2.Call;
@@ -29,7 +32,7 @@ import retrofit2.Response;
 public class CommentFragment extends Fragment {
 
     private RealmList<Long> commentIds = new RealmList<>();
-    private RealmList<Comment> comments = new RealmList<>();
+    private ArrayList<Comment> comments = new ArrayList<>();
     private FrameLayout mainContent, noItemFound, networkLayout, progressBar;
     private View rootView;
     private RecyclerView recyclerView;
@@ -38,6 +41,7 @@ public class CommentFragment extends Fragment {
     private int index = 0;
     private boolean commentExist = false;
     private boolean trackNetwork = false;
+    private boolean isDataFetchedFromCache = false;
 
     /**
      * Constructor
@@ -79,6 +83,14 @@ public class CommentFragment extends Fragment {
         networkLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                index = 0;
+                comments.clear();
+
+                mainContent.setVisibility(View.GONE);
+                noItemFound.setVisibility(View.GONE);
+                networkLayout.setVisibility(View.GONE);
+                progressBar.setVisibility(View.VISIBLE);
+
                 requestCommentData();
             }
         });
@@ -88,23 +100,52 @@ public class CommentFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        //check if comment exists
         if (commentExist) {
             if (commentIds.size() < MAX_ITEM_FETCH) {
                 MAX_ITEM_FETCH = commentIds.size();
             }
-            mainContent.setVisibility(View.GONE);
-            noItemFound.setVisibility(View.GONE);
-            networkLayout.setVisibility(View.GONE);
-            progressBar.setVisibility(View.VISIBLE);
 
-            //request data from server
-            requestCommentData();
+            //check if available in cache
+            checkAvailablitiyFromCache();
+
         } else {
             mainContent.setVisibility(View.GONE);
             noItemFound.setVisibility(View.VISIBLE);
             networkLayout.setVisibility(View.GONE);
             progressBar.setVisibility(View.GONE);
         }
+    }
+
+    /**
+     * Check if data is Availbale in cache
+     */
+    public void checkAvailablitiyFromCache() {
+        try {
+            int size = DatabaseHelper.getCommentForIds(commentIds, MAX_ITEM_FETCH).size();
+
+            if (size > 0) {
+                isDataFetchedFromCache = true;
+
+                comments.addAll(DatabaseHelper.getCommentForIds(commentIds, MAX_ITEM_FETCH));
+                //locally availbale display list
+                displayComment();
+            } else {
+                isDataFetchedFromCache = false;
+                index = 0;
+                comments.clear();
+
+                mainContent.setVisibility(View.GONE);
+                noItemFound.setVisibility(View.GONE);
+                networkLayout.setVisibility(View.GONE);
+                progressBar.setVisibility(View.VISIBLE);
+
+                //request data from server
+                requestCommentData();
+            }
+        } catch (Exception e) {
+        }
+
     }
 
     /**
@@ -178,6 +219,11 @@ public class CommentFragment extends Fragment {
                 recyclerView.setLayoutManager(linearLayoutManager);
                 adapter = new CommentAdapter(getActivity(), comments);
                 recyclerView.setAdapter(adapter);
+
+                //save data locally; if data fetched from server
+                if (!isDataFetchedFromCache) {
+                    DatabaseHelper.addAllComments(comments);
+                }
             } else {
                 if (trackNetwork) {
                     noItemFound.setVisibility(View.GONE);

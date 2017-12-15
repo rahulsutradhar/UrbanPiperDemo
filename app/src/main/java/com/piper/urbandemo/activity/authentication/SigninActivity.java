@@ -132,15 +132,12 @@ public class SigninActivity extends AppCompatActivity {
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
-            if (currentUser.getDisplayName() != null) {
+            if (currentUser.getDisplayName() != null && !currentUser.getDisplayName().isEmpty()) {
                 Toast.makeText(SigninActivity.this, "Logged in as " + currentUser.getDisplayName() + " !!", Toast.LENGTH_SHORT).show();
-            } else if (currentUser.getEmail() != null) {
-                Toast.makeText(SigninActivity.this, "Logged in as " + currentUser.getEmail(), Toast.LENGTH_SHORT).show();
-            } else if (currentUser.getPhoneNumber() != null) {
-                Toast.makeText(SigninActivity.this, "Logged in as " + currentUser.getPhoneNumber(), Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(SigninActivity.this, "Welcome", Toast.LENGTH_SHORT).show();
             }
             navigateAfterLogin(currentUser);
-
         }
     }
 

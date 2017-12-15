@@ -168,7 +168,6 @@ public class HomeActivity extends AppCompatActivity {
      */
     public void checkAvailablitiyFromCache() {
         int size = DatabaseHelper.getSizeTopStories();
-        Toast.makeText(this, "Get Size - " + size, Toast.LENGTH_SHORT).show();
         if (size > 0) {
             isDataFetchedFromCache = true;
             topStoriesList.clear();
@@ -245,7 +244,7 @@ public class HomeActivity extends AppCompatActivity {
 
                     @Override
                     public void onFailure(Call<ResponseTopStoryId> call, Throwable t) {
-                        Toast.makeText(HomeActivity.this, "Failed - " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(HomeActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
                         mainContent.setVisibility(View.GONE);
                         noItemFound.setVisibility(View.GONE);
                         progressBar.setVisibility(View.GONE);
@@ -328,7 +327,7 @@ public class HomeActivity extends AppCompatActivity {
                 progressBar.setVisibility(View.GONE);
                 noItemFound.setVisibility(View.GONE);
 
-                Toast.makeText(HomeActivity.this, "Fetched " + topStoriesList.size() + " items", Toast.LENGTH_SHORT).show();
+                Toast.makeText(HomeActivity.this, "Fetched " + topStoriesList.size() + " Top Stories", Toast.LENGTH_SHORT).show();
 
                 final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
                 linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);

@@ -97,22 +97,47 @@ public class DatabaseHelper {
     /**
      * Get ALL Comment for the ids
      */
-    public static RealmList<Comment> getCommentForIds(RealmList<Long> commentIds, int maxItem) {
-        RealmList<Comment> comments = new RealmList<>();
-
-        RealmQuery q = UrbanApplication.getRealm().where(Comment.class);
+    public static ArrayList<Comment> getCommentForIds(RealmList<Long> commentIds, int maxItem) {
+        ArrayList<Comment> comments = new ArrayList<>();
+        Long arr[] = new Long[maxItem];
         for (int i = 0; i < maxItem; i++) {
-            long id = commentIds.get(i);
-            q = q.equalTo("id", id);
+            arr[i] = commentIds.get(i);
         }
 
-        RealmResults<Comment> realmResults = q.findAll();
+        //make the query
+        RealmQuery<Comment> realmQuery = UrbanApplication.getRealm().where(Comment.class);
+        realmQuery.in("id", arr);
+        RealmResults<Comment> realmResults = realmQuery.findAll();
         if (realmResults.isLoaded()) {
             if (realmResults.size() > 0) {
-                comments.addAll(realmResults);
+                comments.addAll(realmResults.subList(0, realmResults.size()));
             }
         }
         return comments;
+    }
+
+    /**
+     * Add All Commnets
+     */
+    public static void addAllComments(final List<Comment> comments) {
+        Realm realm = UrbanApplication.getRealm();
+        realm.executeTransactionAsync
+                (new Realm.Transaction() {
+                    @Override
+                    public void execute(Realm realm) {
+                        realm.copyToRealmOrUpdate(comments);
+                    }
+                }, new Realm.Transaction.OnSuccess() {
+                    @Override
+                    public void onSuccess() {
+                        //TODO
+
+                    }
+                }, new Realm.Transaction.OnError() {
+                    @Override
+                    public void onError(Throwable error) {
+                    }
+                });
     }
 
 
