@@ -9,7 +9,11 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.piper.urbandemo.R;
+import com.piper.urbandemo.helper.DateHelper;
 import com.piper.urbandemo.model.Comment;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import io.realm.RealmList;
 
@@ -20,13 +24,13 @@ import io.realm.RealmList;
 public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private Context context;
-    private RealmList<Comment> comments = new RealmList<>();
+    private ArrayList<Comment> comments = new ArrayList<>();
 
-    public RealmList<Comment> getComments() {
+    public ArrayList<Comment> getComments() {
         return comments;
     }
 
-    public void setComments(RealmList<Comment> comments) {
+    public void setComments(ArrayList<Comment> comments) {
         this.comments = comments;
     }
 
@@ -36,9 +40,9 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
      * @param context
      * @param comments
      */
-    public CommentAdapter(Context context, RealmList<Comment> comments) {
+    public CommentAdapter(Context context, List<Comment> comments) {
         this.context = context;
-        this.comments = comments;
+        this.comments.addAll(comments);
     }
 
     /**
@@ -46,9 +50,9 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
      *
      * @param comments
      */
-    public void setData(RealmList<Comment> comments) {
-        comments.clear();
-        setComments(comments);
+    public void setData(List<Comment> comments) {
+        this.comments.clear();
+        this.comments.addAll(comments);
         notifyDataSetChanged();
     }
 
@@ -87,6 +91,7 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             try {
                 username.setText(comment.getUserName());
                 description.setText(Html.fromHtml(comment.getDescription()));
+                timeStamp.setText(DateHelper.parseDate(String.valueOf(comment.getTimeStamp())));
 
             } catch (NullPointerException npe) {
                 npe.printStackTrace();

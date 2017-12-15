@@ -11,14 +11,14 @@ import io.realm.annotations.PrimaryKey;
  * Created by developers on 14/12/17.
  */
 
-public class Comment implements Serializable {
-
-    @SerializedName("by")
-    private String userName;
+public class Comment extends RealmObject implements Serializable {
 
     @PrimaryKey
     @SerializedName("id")
     private long id;
+
+    @SerializedName("by")
+    private String userName;
 
     @SerializedName("parent")
     private long parentId;

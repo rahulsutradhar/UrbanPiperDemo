@@ -5,6 +5,8 @@ import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import io.realm.Realm;
+import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
@@ -12,7 +14,7 @@ import io.realm.annotations.PrimaryKey;
  * Created by developers on 12/12/17.
  */
 
-public class TopStory implements Serializable {
+public class TopStory extends RealmObject implements Serializable {
 
     @PrimaryKey
     @SerializedName("id")
@@ -40,7 +42,7 @@ public class TopStory implements Serializable {
     private long timeStamp;
 
     @SerializedName("kids")
-    private ArrayList<Long> commentIds;
+    private RealmList<Long> commentIds;
 
 
     /************************************************
@@ -111,11 +113,11 @@ public class TopStory implements Serializable {
         this.timeStamp = timeStamp;
     }
 
-    public ArrayList<Long> getCommentIds() {
+    public RealmList<Long> getCommentIds() {
         return commentIds;
     }
 
-    public void setCommentIds(ArrayList<Long> commentIds) {
+    public void setCommentIds(RealmList<Long> commentIds) {
         this.commentIds = commentIds;
     }
 }

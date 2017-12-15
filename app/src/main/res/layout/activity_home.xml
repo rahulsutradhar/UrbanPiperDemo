@@ -45,9 +45,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/avenirnextpro_regular"
-                    android:text="Updated 23 mins ago"
+                    android:text=""
                     android:textColor="@color/color_white"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     android:textStyle="normal" />
 
             </LinearLayout>

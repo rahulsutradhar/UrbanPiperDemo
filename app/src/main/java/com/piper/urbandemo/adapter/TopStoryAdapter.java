@@ -7,12 +7,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.piper.urbandemo.R;
 import com.piper.urbandemo.UrbanApplication;
 import com.piper.urbandemo.activity.home.StoryDetailsActivity;
+import com.piper.urbandemo.helper.CoreGsonUtils;
+import com.piper.urbandemo.helper.DateHelper;
 import com.piper.urbandemo.model.TopStory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import io.realm.RealmList;
 
@@ -23,14 +29,23 @@ import io.realm.RealmList;
 public class TopStoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private Context context;
-    private RealmList<TopStory> topStories = new RealmList<>();
+    private ArrayList<TopStory> topStories = new ArrayList<>();
+    private boolean isFetchedFromCache = false;
 
-    public RealmList<TopStory> getTopStories() {
+    public ArrayList<TopStory> getTopStories() {
         return topStories;
     }
 
-    public void setTopStories(RealmList<TopStory> topStories) {
+    public void setTopStories(ArrayList<TopStory> topStories) {
         this.topStories = topStories;
+    }
+
+    public boolean isFetchedFromCache() {
+        return isFetchedFromCache;
+    }
+
+    public void setFetchedFromCache(boolean fetchedFromCache) {
+        isFetchedFromCache = fetchedFromCache;
     }
 
     /**
@@ -38,9 +53,9 @@ public class TopStoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
      *
      * @param context
      */
-    public TopStoryAdapter(Context context, RealmList<TopStory> topStories) {
+    public TopStoryAdapter(Context context, List<TopStory> topStories) {
         this.context = context;
-        setTopStories(topStories);
+        this.topStories.addAll(topStories);
     }
 
     /**
@@ -48,9 +63,9 @@ public class TopStoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
      *
      * @param topStories
      */
-    public void setData(RealmList<TopStory> topStories) {
+    public void setData(List<TopStory> topStories) {
         topStories.clear();
-        setTopStories(topStories);
+        this.topStories.addAll(topStories);
         notifyDataSetChanged();
     }
 
@@ -63,7 +78,7 @@ public class TopStoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         TopStoryViewHolder topStoryViewHolder = (TopStoryViewHolder) holder;
-        topStoryViewHolder.setViews(topStories.get(position), position);
+        topStoryViewHolder.setViews(topStories.get(position));
     }
 
     @Override
@@ -96,9 +111,8 @@ public class TopStoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
          * Set Data to views
          *
          * @param topStory
-         * @param position
          */
-        public void setViews(final TopStory topStory, int position) {
+        public void setViews(final TopStory topStory) {
             if (topStory != null) {
                 try {
                     if (topStory.getTitle() != null) {
@@ -118,6 +132,8 @@ public class TopStoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
                     commentCount.setText(String.valueOf(topStory.getTotalCommentCount()));
 
+                    timeStamp.setText(DateHelper.parseDate(String.valueOf(topStory.getTimeStamp())));
+
                     itemView.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -136,13 +152,19 @@ public class TopStoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
          */
         public void navigateToStoryDetailsActivity(TopStory topStory) {
 
-            Gson gson = new Gson();
-            String strTopStory = gson.toJson(topStory);
-
-            //TODO: pass thie object and fetch comments
             Intent intent = new Intent(UrbanApplication.getAppContext(), StoryDetailsActivity.class);
-            intent.putExtra("TOP_STORY", strTopStory);
-            UrbanApplication.getAppContext().startActivity(intent);
+            if (isFetchedFromCache()) {
+                //when fetched from cache pass the primary key of the object and fetch the objec from db
+                intent.putExtra("FETCHED_FROM_CACHE", true);
+                intent.putExtra("TOP_STORY_ID", topStory.getId());
+
+            } else {
+                //when fetched from server; pass the object to other activity
+                String strTopStory = CoreGsonUtils.toJson(topStory);
+                intent.putExtra("TOP_STORY", strTopStory);
+                intent.putExtra("FETCHED_FROM_CACHE", false);
+            }
+            context.startActivity(intent);
         }
     }
 }

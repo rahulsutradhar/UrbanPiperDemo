@@ -44,4 +44,13 @@ public class PreferenceManager {
         return pref.getBoolean(key, false);
     }
 
+    public void setStringPref(String key, String value) {
+        editor.putString(key, value);
+        editor.commit();
+    }
+
+    public String getStringPref(String key) {
+        return pref.getString(key, "");
+    }
+
 }

@@ -10,4 +10,6 @@ public class Keys {
     public static final String EMAIL_LOGIN = "email_login";
     public static final String PHONE_LOGIN = "phone_login";
 
+    public static final String LAST_UPDATE_TIMESTAMP = "last_update_timestamp";
+
 }

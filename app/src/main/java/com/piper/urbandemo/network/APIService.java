@@ -1,8 +1,8 @@
 package com.piper.urbandemo.network;
 
 
-import com.piper.urbandemo.network.Response.ResponseComment;
-import com.piper.urbandemo.network.Response.ResponseTopStory;
+import com.piper.urbandemo.model.Comment;
+import com.piper.urbandemo.model.TopStory;
 import com.piper.urbandemo.network.Response.ResponseTopStoryId;
 
 import retrofit2.Call;
@@ -23,14 +23,18 @@ public interface APIService {
     Call<ResponseTopStoryId> fetchTopStoriesId(@Query("print") String query);
 
     /**
+     * Using Model class as Realm doesnot support multilevel inheritance
+     */
+
+    /**
      * Request to Fetch A Story
      */
     @GET("item/{story_id}")
-    Call<ResponseTopStory> fetchTopStory(@Path("story_id") String storyId, @Query("print") String query);
+    Call<TopStory> fetchTopStory(@Path("story_id") String storyId, @Query("print") String query);
 
     /**
      * Request to Fetch A Comment
      */
     @GET("item/{comment_id}")
-    Call<ResponseComment> fetchComment(@Path("comment_id") String commentId, @Query("print") String query);
+    Call<Comment> fetchComment(@Path("comment_id") String commentId, @Query("print") String query);
 }

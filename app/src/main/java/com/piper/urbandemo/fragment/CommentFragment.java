@@ -5,7 +5,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,11 +13,10 @@ import android.widget.Toast;
 
 import com.piper.urbandemo.R;
 import com.piper.urbandemo.UrbanApplication;
-import com.piper.urbandemo.activity.home.HomeActivity;
 import com.piper.urbandemo.adapter.CommentAdapter;
 import com.piper.urbandemo.helper.CoreGsonUtils;
+import com.piper.urbandemo.helper.DatabaseHelper;
 import com.piper.urbandemo.model.Comment;
-import com.piper.urbandemo.network.Response.ResponseComment;
 
 import java.util.ArrayList;
 
@@ -33,8 +31,8 @@ import retrofit2.Response;
 
 public class CommentFragment extends Fragment {
 
-    private ArrayList<Long> commentIds = new ArrayList<>();
-    private RealmList<Comment> comments = new RealmList<>();
+    private RealmList<Long> commentIds = new RealmList<>();
+    private ArrayList<Comment> comments = new ArrayList<>();
     private FrameLayout mainContent, noItemFound, networkLayout, progressBar;
     private View rootView;
     private RecyclerView recyclerView;
@@ -43,6 +41,7 @@ public class CommentFragment extends Fragment {
     private int index = 0;
     private boolean commentExist = false;
     private boolean trackNetwork = false;
+    private boolean isDataFetchedFromCache = false;
 
     /**
      * Constructor
@@ -64,7 +63,7 @@ public class CommentFragment extends Fragment {
         commentExist = getArguments().getBoolean("COMMENT_EXIST");
         if (commentExist) {
             String commentidsStr = getArguments().getString("COMMENT_IDS");
-            commentIds = CoreGsonUtils.fromJsontoArrayList(commentidsStr, Long.class);
+            commentIds = CoreGsonUtils.fromJsontoRealmList(commentidsStr, Long.class);
         }
 
         setViews();
@@ -84,6 +83,14 @@ public class CommentFragment extends Fragment {
         networkLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                index = 0;
+                comments.clear();
+
+                mainContent.setVisibility(View.GONE);
+                noItemFound.setVisibility(View.GONE);
+                networkLayout.setVisibility(View.GONE);
+                progressBar.setVisibility(View.VISIBLE);
+
                 requestCommentData();
             }
         });
@@ -93,17 +100,15 @@ public class CommentFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        //check if comment exists
         if (commentExist) {
             if (commentIds.size() < MAX_ITEM_FETCH) {
                 MAX_ITEM_FETCH = commentIds.size();
             }
-            mainContent.setVisibility(View.GONE);
-            noItemFound.setVisibility(View.GONE);
-            networkLayout.setVisibility(View.GONE);
-            progressBar.setVisibility(View.VISIBLE);
 
-            //request data from server
-            requestCommentData();
+            //check if available in cache
+            checkAvailablitiyFromCache();
+
         } else {
             mainContent.setVisibility(View.GONE);
             noItemFound.setVisibility(View.VISIBLE);
@@ -113,9 +118,40 @@ public class CommentFragment extends Fragment {
     }
 
     /**
+     * Check if data is Availbale in cache
+     */
+    public void checkAvailablitiyFromCache() {
+        try {
+            int size = DatabaseHelper.getCommentForIds(commentIds, MAX_ITEM_FETCH).size();
+
+            if (size > 0) {
+                isDataFetchedFromCache = true;
+
+                comments.addAll(DatabaseHelper.getCommentForIds(commentIds, MAX_ITEM_FETCH));
+                //locally availbale display list
+                displayComment();
+            } else {
+                isDataFetchedFromCache = false;
+                index = 0;
+                comments.clear();
+
+                mainContent.setVisibility(View.GONE);
+                noItemFound.setVisibility(View.GONE);
+                networkLayout.setVisibility(View.GONE);
+                progressBar.setVisibility(View.VISIBLE);
+
+                //request data from server
+                requestCommentData();
+            }
+        } catch (Exception e) {
+        }
+
+    }
+
+    /**
      * Fetch data
      */
-    public void requestCommentData() {
+    public synchronized void requestCommentData() {
         if (index >= MAX_ITEM_FETCH) {
             displayComment();
         } else {
@@ -131,30 +167,34 @@ public class CommentFragment extends Fragment {
      *
      * @param commentId
      */
-    public void fetchIndividualComment(String commentId) {
+    public synchronized void fetchIndividualComment(String commentId) {
 
         UrbanApplication.getAPIService()
                 .fetchComment(commentId, "pretty")
-                .enqueue(new Callback<ResponseComment>() {
+                .enqueue(new Callback<Comment>() {
                     @Override
-                    public void onResponse(Call<ResponseComment> call, Response<ResponseComment> response) {
+                    public void onResponse(Call<Comment> call, Response<Comment> response) {
 
                         if (response.isSuccessful()) {
                             if (response.body() != null) {
-                                ResponseComment responseComment = response.body();
-                                comments.add(responseComment);
+                                Comment comment = response.body();
+                                comments.add(comment);
                                 trackNetwork = false;
 
-                                //fetch next top stories
-                                requestCommentData();
+                                if (getActivity() != null) {
+                                    //fetch next top stories
+                                    requestCommentData();
+                                }
                             }
                         }
                     }
 
                     @Override
-                    public void onFailure(Call<ResponseComment> call, Throwable t) {
+                    public void onFailure(Call<Comment> call, Throwable t) {
                         trackNetwork = true;
-                        requestCommentData();
+                        if (getActivity() != null) {
+                            requestCommentData();
+                        }
                     }
                 });
 
@@ -165,29 +205,36 @@ public class CommentFragment extends Fragment {
      */
     public void displayComment() {
 
-        if (commentIds.size() > 0) {
-            mainContent.setVisibility(View.VISIBLE);
-            noItemFound.setVisibility(View.GONE);
-            networkLayout.setVisibility(View.GONE);
-            progressBar.setVisibility(View.GONE);
-
-            Toast.makeText(getActivity(), "Fetched " + comments.size() + " comments", Toast.LENGTH_SHORT).show();
-
-            final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
-            linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-            recyclerView.setLayoutManager(linearLayoutManager);
-            adapter = new CommentAdapter(getActivity(), comments);
-            recyclerView.setAdapter(adapter);
-        } else {
-            if (trackNetwork) {
+        if (getActivity() != null) {
+            if (commentIds.size() > 0) {
+                mainContent.setVisibility(View.VISIBLE);
                 noItemFound.setVisibility(View.GONE);
-                networkLayout.setVisibility(View.VISIBLE);
-            } else {
-                noItemFound.setVisibility(View.VISIBLE);
                 networkLayout.setVisibility(View.GONE);
+                progressBar.setVisibility(View.GONE);
+
+                Toast.makeText(getActivity(), "Fetched " + comments.size() + " comments", Toast.LENGTH_SHORT).show();
+
+                final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
+                linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+                recyclerView.setLayoutManager(linearLayoutManager);
+                adapter = new CommentAdapter(getActivity(), comments);
+                recyclerView.setAdapter(adapter);
+
+                //save data locally; if data fetched from server
+                if (!isDataFetchedFromCache) {
+                    DatabaseHelper.addAllComments(comments);
+                }
+            } else {
+                if (trackNetwork) {
+                    noItemFound.setVisibility(View.GONE);
+                    networkLayout.setVisibility(View.VISIBLE);
+                } else {
+                    noItemFound.setVisibility(View.VISIBLE);
+                    networkLayout.setVisibility(View.GONE);
+                }
+                mainContent.setVisibility(View.GONE);
+                progressBar.setVisibility(View.GONE);
             }
-            mainContent.setVisibility(View.GONE);
-            progressBar.setVisibility(View.GONE);
         }
     }
 }

@@ -6,6 +6,9 @@ import org.json.JSONArray;
 
 import java.util.ArrayList;
 
+import io.realm.RealmList;
+import io.realm.RealmModel;
+
 /**
  * Created by developers on 14/12/17.
  */
@@ -32,25 +35,22 @@ public class CoreGsonUtils {
         return gsonstr;
     }
 
-    public static <T> ArrayList<T> fromJsontoArrayList(String string, Class<T> model) {
+
+    public static <T extends Long> RealmList<T> fromJsontoRealmList(String string, Class<T> model) {
 
         Gson gson = getGsonObject();
         T gfromat = null;
-        ArrayList<T> localArrayList = new ArrayList<T>();
+        RealmList<T> localArrayList = new RealmList<>();
         try {
-
             JSONArray jsonInner = new JSONArray(string);
+
             int i = 0;
             while (i < jsonInner.length()) {
                 gfromat = gson.fromJson(jsonInner.get(i).toString(), model);
                 localArrayList.add(gfromat);
                 i++;
-
             }
-
-        } catch (Exception e)
-
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
