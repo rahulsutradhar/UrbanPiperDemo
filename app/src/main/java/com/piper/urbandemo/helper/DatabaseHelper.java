@@ -1,8 +1,14 @@
 package com.piper.urbandemo.helper;
 
+import android.util.Log;
+import android.widget.Toast;
+
 import com.piper.urbandemo.UrbanApplication;
 import com.piper.urbandemo.model.Comment;
 import com.piper.urbandemo.model.TopStory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import io.realm.Realm;
 import io.realm.RealmList;
@@ -18,7 +24,7 @@ public class DatabaseHelper {
     /**
      * Add All Top Stories
      */
-    public static void addTopStories(final RealmList<TopStory> topStories) {
+    public static void addTopStories(final List<TopStory> topStories) {
 
         Realm realm = UrbanApplication.getRealm();
         realm.executeTransactionAsync
@@ -31,6 +37,7 @@ public class DatabaseHelper {
                     @Override
                     public void onSuccess() {
                         //TODO
+
                     }
                 }, new Realm.Transaction.OnError() {
                     @Override
@@ -43,16 +50,33 @@ public class DatabaseHelper {
     /**
      * Get All Top stories
      */
-    public static RealmList<TopStory> getTopStories() {
-        RealmList<TopStory> topStories = new RealmList<>();
+    public static ArrayList<TopStory> getTopStories() {
+        ArrayList<TopStory> topStories = new ArrayList<>();
 
-        RealmResults<TopStory> realmResults = UrbanApplication.getRealm().where(TopStory.class).equalTo("type", "story").findAll();
+        RealmResults<TopStory> realmResults = UrbanApplication.getRealm().where(TopStory.class).equalTo("type", "story").greaterThan("id", 0).findAll();
         if (realmResults.isLoaded()) {
             if (realmResults.size() > 0) {
-                topStories.addAll(realmResults);
+                topStories.addAll(realmResults.subList(0, realmResults.size()));
             }
         }
         return topStories;
+    }
+
+    /**
+     * Get a Top Story for the ID
+     */
+    public static TopStory getTopStory(long id) {
+        TopStory topStory = null;
+        try {
+            Realm realm = UrbanApplication.getRealm();
+            realm.beginTransaction();
+            topStory = realm.where(TopStory.class).equalTo("id", id).equalTo("type", "story").findFirst();
+            realm.commitTransaction();
+
+        } catch (NullPointerException npe) {
+            npe.printStackTrace();
+        }
+        return topStory;
     }
 
     /**
@@ -61,7 +85,7 @@ public class DatabaseHelper {
     public static int getSizeTopStories() {
         int size = 0;
         try {
-            size = UrbanApplication.getRealm().where(TopStory.class).equalTo("type", "story").findAll().size();
+            size = UrbanApplication.getRealm().where(TopStory.class).equalTo("type", "story").greaterThan("id", 0).findAll().size();
         } catch (NullPointerException npe) {
             npe.printStackTrace();
         } catch (Exception e) {

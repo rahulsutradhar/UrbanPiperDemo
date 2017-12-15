@@ -39,7 +39,7 @@ public class HomeActivity extends AppCompatActivity {
 
     private Toolbar toolbar;
     private PreferenceManager preferenceManager;
-    private RealmList<TopStory> topStoriesList;
+    private ArrayList<TopStory> topStoriesList;
     private TextView title, subtitle;
     private FrameLayout noItemFound, mainContent, progressBar, networkProblem;
     private RecyclerView recyclerView;
@@ -117,7 +117,7 @@ public class HomeActivity extends AppCompatActivity {
      * Initialize variables
      */
     public void setVaribles() {
-        topStoriesList = new RealmList<>();
+        topStoriesList = new ArrayList<>();
         topStoryIds = new ArrayList<>();
     }
 
@@ -167,7 +167,9 @@ public class HomeActivity extends AppCompatActivity {
      * Check if data is Available from Cache else Request Server
      */
     public void checkAvailablitiyFromCache() {
-        if (DatabaseHelper.getSizeTopStories() > 0) {
+        int size = DatabaseHelper.getSizeTopStories();
+        Toast.makeText(this, "Get Size - " + size, Toast.LENGTH_SHORT).show();
+        if (size > 0) {
             isDataFetchedFromCache = true;
             topStoriesList.clear();
             topStoriesList.addAll(DatabaseHelper.getTopStories());
@@ -332,6 +334,7 @@ public class HomeActivity extends AppCompatActivity {
                 linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
                 recyclerView.setLayoutManager(linearLayoutManager);
                 adapter = new TopStoryAdapter(this, topStoriesList);
+                adapter.setFetchedFromCache(isDataFetchedFromCache);
                 recyclerView.setAdapter(adapter);
 
                 //data fetched from server save locally

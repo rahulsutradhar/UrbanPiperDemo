@@ -23,7 +23,7 @@ public interface APIService {
     Call<ResponseTopStoryId> fetchTopStoriesId(@Query("print") String query);
 
     /**
-     * Using Model class as Realm doesnot support multiple inheritance
+     * Using Model class as Realm doesnot support multilevel inheritance
      */
 
     /**

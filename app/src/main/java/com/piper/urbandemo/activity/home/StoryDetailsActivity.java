@@ -18,6 +18,7 @@ import com.piper.urbandemo.adapter.ViewPagerAdapter;
 import com.piper.urbandemo.fragment.ArticleFragment;
 import com.piper.urbandemo.fragment.CommentFragment;
 import com.piper.urbandemo.helper.CoreGsonUtils;
+import com.piper.urbandemo.helper.DatabaseHelper;
 import com.piper.urbandemo.helper.DateHelper;
 import com.piper.urbandemo.model.TopStory;
 
@@ -37,6 +38,7 @@ public class StoryDetailsActivity extends AppCompatActivity {
     private ViewPager pager;
     private CollapsingToolbarLayout collapsingToolbarLayout;
     private TextView titleText, urlText, usernameText, timestampText;
+    private boolean isFetchedFromCache = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,11 +53,17 @@ public class StoryDetailsActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-
-        String strTopStory = getIntent().getExtras().getString("TOP_STORY");
-        Gson gson = new Gson();
-        topStory = gson.fromJson(strTopStory, TopStory.class);
-
+        isFetchedFromCache = getIntent().getExtras().getBoolean("FETCHED_FROM_CACHE");
+        if (isFetchedFromCache) {
+            //fetch the data from database
+            long topStoryId = getIntent().getExtras().getLong("TOP_STORY_ID");
+            topStory = DatabaseHelper.getTopStory(topStoryId);
+        } else {
+            //take the data passed via intent
+            String strTopStory = getIntent().getExtras().getString("TOP_STORY");
+            Gson gson = new Gson();
+            topStory = gson.fromJson(strTopStory, TopStory.class);
+        }
         //initilaize views
         setViews();
     }
