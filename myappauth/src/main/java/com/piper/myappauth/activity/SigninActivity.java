@@ -1,5 +1,6 @@
-package com.piper.urbandemo.activity.authentication;
+package com.piper.myappauth.activity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -26,10 +27,8 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.piper.urbandemo.R;
-import com.piper.urbandemo.helper.Keys;
-import com.piper.urbandemo.helper.PreferenceManager;
-import com.piper.urbandemo.activity.home.HomeActivity;
+import com.piper.myappauth.R;
+import com.piper.myappauth.helper.Keys;
 
 import java.util.Arrays;
 import java.util.List;
@@ -41,15 +40,17 @@ import java.util.List;
 public class SigninActivity extends AppCompatActivity {
 
     private static final String TAG = "GoogleActivity";
-    private FirebaseAuth mAuth;
+    private static FirebaseAuth mAuth;
     private LinearLayout googleSigninButton;
+    private static Context context;
     private GoogleSignInOptions gso;
     private GoogleSignInClient mGoogleSignInClient;
     private static final int RC_GOOGLE_SIGN_IN = 9001;
     private static final int RC_PHONE_SIGN_IN = 9002;
+    private static final int RC_AUTH_RESULT = 4000;
     private ProgressBar progressBar;
     private Button emailSignin, emailSignup, phoneSignin;
-    private PreferenceManager preferenceManager;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +60,7 @@ public class SigninActivity extends AppCompatActivity {
         //Connect views
         setViews();
 
-        //initialize firebase
+        //initiliaze firebase
         mAuth = FirebaseAuth.getInstance();
 
         // Configure Google Sign In
@@ -71,11 +72,7 @@ public class SigninActivity extends AppCompatActivity {
         // Build a GoogleSignInClient with the options specified by gso.
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
-        //initialize preference maanager
-        preferenceManager = new PreferenceManager(SigninActivity.this);
 
-        //check if user is already logged in
-        checkIfUserAlreadyLoggedIn();
     }
 
     /**
@@ -125,22 +122,6 @@ public class SigninActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Check if user is Already logged in
-     */
-    public void checkIfUserAlreadyLoggedIn() {
-        // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) {
-            if (currentUser.getDisplayName() != null && !currentUser.getDisplayName().isEmpty()) {
-                Toast.makeText(SigninActivity.this, "Logged in as " + currentUser.getDisplayName() + " !!", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(SigninActivity.this, "Welcome", Toast.LENGTH_SHORT).show();
-            }
-            navigateAfterLogin(currentUser);
-        }
-    }
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -160,7 +141,7 @@ public class SigninActivity extends AppCompatActivity {
     public void openSinginForm() {
         Intent intent = new Intent(this, EmailLoginFormActivity.class);
         intent.putExtra("Signin", true);
-        startActivity(intent);
+        startActivityForResult(intent, RC_AUTH_RESULT);
     }
 
     /**
@@ -187,7 +168,7 @@ public class SigninActivity extends AppCompatActivity {
     public void openSignUpForm() {
         Intent intent = new Intent(this, EmailLoginFormActivity.class);
         intent.putExtra("Signin", false);
-        startActivity(intent);
+        startActivityForResult(intent, RC_AUTH_RESULT);
     }
 
     @Override
@@ -217,16 +198,15 @@ public class SigninActivity extends AppCompatActivity {
                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                 Toast.makeText(SigninActivity.this, "Welcome", Toast.LENGTH_SHORT).show();
 
-                //set Login status to preference
-                preferenceManager.setBooleanPref(Keys.PHONE_LOGIN, true);
-
                 //navigate to home
-                navigateAfterLogin(user);
+                navigateAfterLogin();
             } else {
                 // Sign in failed, check response for error code
                 // ...
                 Toast.makeText(SigninActivity.this, "Authentication Failed", Toast.LENGTH_SHORT).show();
             }
+        } else if (requestCode == RC_AUTH_RESULT) {
+            navigateAfterLogin();
         }
     }
 
@@ -253,10 +233,7 @@ public class SigninActivity extends AppCompatActivity {
                             //Login Successful; Now navigate to home page
                             Toast.makeText(SigninActivity.this, "Welcome " + user.getDisplayName() + " !!", Toast.LENGTH_SHORT).show();
 
-                            //set Login status to preference
-                            preferenceManager.setBooleanPref(Keys.GOOGLE_LOGIN, true);
-
-                            navigateAfterLogin(user);
+                            navigateAfterLogin();
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
@@ -270,12 +247,19 @@ public class SigninActivity extends AppCompatActivity {
     /**
      * Navigate after login
      */
-    public void navigateAfterLogin(FirebaseUser user) {
+    public void navigateAfterLogin() {
+        Intent intent = new Intent();
+        intent.putExtra(Keys.USER_AUTHENTICATED, true);
         //moved to home
-        Intent intent = new Intent(this, HomeActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
+        setResult(RC_AUTH_RESULT, intent);
+        finish();
+    }
 
+    public static FirebaseAuth getmAuth() {
+        return mAuth;
+    }
+
+    public static void setmAuth(FirebaseAuth mAuth) {
+        SigninActivity.mAuth = mAuth;
     }
 }

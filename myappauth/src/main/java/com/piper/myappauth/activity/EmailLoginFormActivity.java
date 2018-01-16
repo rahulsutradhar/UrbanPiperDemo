@@ -1,6 +1,5 @@
-package com.piper.urbandemo.activity.authentication;
+package com.piper.myappauth.activity;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -16,10 +15,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.piper.urbandemo.R;
-import com.piper.urbandemo.helper.Keys;
-import com.piper.urbandemo.helper.PreferenceManager;
-import com.piper.urbandemo.activity.home.HomeActivity;
+import com.piper.myappauth.R;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,13 +27,13 @@ import java.util.regex.Pattern;
 public class EmailLoginFormActivity extends AppCompatActivity {
 
     private static final String TAG = "EmailSinginActivity";
+    private static final int RC_AUTH_RESULT = 4000;
     private EditText emailEditText, passwordEditText;
     private Toolbar toolbar;
     private String emailText, passwordText;
     private Button signinButton;
     private FirebaseAuth mAuth;
     private boolean operationSignin;
-    private PreferenceManager preferenceManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,9 +65,6 @@ public class EmailLoginFormActivity extends AppCompatActivity {
 
         //Firebase Instance
         mAuth = FirebaseAuth.getInstance();
-
-        //initialize preference
-        preferenceManager = new PreferenceManager(this);
 
     }
 
@@ -184,11 +177,8 @@ public class EmailLoginFormActivity extends AppCompatActivity {
                             //Login Successful; Now navigate to home page
                             Toast.makeText(EmailLoginFormActivity.this, "Welcome " + user.getEmail(), Toast.LENGTH_SHORT).show();
 
-                            //set Logged in status to preference
-                            preferenceManager.setBooleanPref(Keys.EMAIL_LOGIN, true);
-
                             //navigate to home
-                            navigateAfterLogin(user);
+                            navigateAfterLogin();
 
                         } else {
                             // If sign in fails, display a message to the user.
@@ -220,11 +210,8 @@ public class EmailLoginFormActivity extends AppCompatActivity {
                             //Login Successful; Now navigate to home page
                             Toast.makeText(EmailLoginFormActivity.this, "Welcome " + user.getEmail(), Toast.LENGTH_SHORT).show();
 
-                            //set Logged in status to preference
-                            preferenceManager.setBooleanPref(Keys.EMAIL_LOGIN, true);
-
                             //navigate to home
-                            navigateAfterLogin(user);
+                            navigateAfterLogin();
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithEmail:failure", task.getException());
@@ -240,13 +227,9 @@ public class EmailLoginFormActivity extends AppCompatActivity {
     /**
      * Navigate after login
      */
-    public void navigateAfterLogin(FirebaseUser user) {
-        //moved to home
-        Intent intent = new Intent(this, HomeActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
-
+    public void navigateAfterLogin() {
+        setResult(RC_AUTH_RESULT);
+        finish();
     }
 }
 
