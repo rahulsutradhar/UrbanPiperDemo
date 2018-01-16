@@ -18,13 +18,9 @@
         <activity android:name=".activity.home.HomeActivity"></activity>
 
         <!--Signin Activity -->
-        <activity android:name=".activity.authentication.SigninActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+        <activity android:name=".activity.authentication.SigninActivity"></activity>
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+        <activity android:name=".activity.SplashActivity"></activity>
 
         <!-- Email Login Activity -->
         <activity android:name=".activity.authentication.EmailLoginFormActivity"></activity>

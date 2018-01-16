@@ -3,6 +3,7 @@ package com.piper.urbandemo;
 import android.app.Application;
 import android.content.Context;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.piper.urbandemo.network.APIService;
 import com.piper.urbandemo.network.RestClient;
 
@@ -30,6 +31,7 @@ public class UrbanApplication extends Application {
     private static Context mContext;
     private static Realm realm;
     private static RealmConfiguration realmConfiguration;
+    private static FirebaseAuth firebaseAuth;
 
     /**
      * RestClient Instance
@@ -73,6 +75,8 @@ public class UrbanApplication extends Application {
         super.onCreate();
 
         mContext = getApplicationContext();
+
+        firebaseAuth = FirebaseAuth.getInstance();
 
          /*Local database*/
         Realm.init(this);
@@ -130,5 +134,13 @@ public class UrbanApplication extends Application {
 
     public static void setRetrofit(Retrofit retrofit) {
         UrbanApplication.retrofit = retrofit;
+    }
+
+    public static FirebaseAuth getFirebaseAuth() {
+        return firebaseAuth;
+    }
+
+    public static void setFirebaseAuth(FirebaseAuth firebaseAuth) {
+        UrbanApplication.firebaseAuth = firebaseAuth;
     }
 }
