@@ -24,6 +24,5 @@ public interface AuthenticationActivity {
     /**
      * Method to know if user is singned in
      */
-
-    boolean isUserAuthenticated(boolean isAuthenticated);
+    void isUserAuthenticated(boolean isAuthenticated);
 }

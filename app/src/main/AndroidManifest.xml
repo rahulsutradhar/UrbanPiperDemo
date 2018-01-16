@@ -17,13 +17,14 @@
         <!-- Home Activity -->
         <activity android:name=".activity.home.HomeActivity"></activity>
 
-        <!--Signin Activity -->
-        <activity android:name=".activity.authentication.SigninActivity"></activity>
 
-        <activity android:name=".activity.SplashActivity"></activity>
+        <activity android:name=".activity.SplashActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
-        <!-- Email Login Activity -->
-        <activity android:name=".activity.authentication.EmailLoginFormActivity"></activity>
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
         <!-- Story Details Activity-->
         <activity android:name=".activity.home.StoryDetailsActivity" />
