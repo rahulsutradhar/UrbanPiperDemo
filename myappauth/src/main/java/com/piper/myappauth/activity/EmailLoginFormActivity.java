@@ -16,8 +16,6 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.piper.myappauth.R;
-import com.piper.myappauth.helper.Keys;
-import com.piper.myappauth.helper.PreferenceManager;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

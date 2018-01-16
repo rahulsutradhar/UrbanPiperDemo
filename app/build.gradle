@@ -46,15 +46,8 @@ dependencies {
     implementation 'com.android.support:recyclerview-v7:26.1.0'
     implementation 'com.android.support:design:26.1.0'
 
-    //Firebase google login
-    compile 'com.google.firebase:firebase-auth:11.6.2'
-    compile 'com.google.android.gms:play-services-auth:11.6.2'
-
     //FCM Notifications
     compile 'com.google.firebase:firebase-messaging:11.6.2'
-
-    //Firebase UI
-    compile 'com.firebaseui:firebase-ui-auth:3.1.0'
 
     /**
      * Network Library Retrofit

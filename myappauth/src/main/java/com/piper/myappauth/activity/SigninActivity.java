@@ -29,8 +29,6 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.piper.myappauth.R;
 import com.piper.myappauth.helper.Keys;
-import com.piper.myappauth.helper.PreferenceManager;
-import com.piper.myappauth.helper.UrbanAuth;
 
 import java.util.Arrays;
 import java.util.List;
@@ -284,9 +282,6 @@ public class SigninActivity extends AppCompatActivity {
         intent.putExtra(Keys.USER_AUTHENTICATED, true);
         //moved to home
         setResult(RC_AUTH_RESULT, intent);
-
-        Toast.makeText(SigninActivity.this, "Navigate Home.",
-                Toast.LENGTH_SHORT).show();
         finish();
     }
 

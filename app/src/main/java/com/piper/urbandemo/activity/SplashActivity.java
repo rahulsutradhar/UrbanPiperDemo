@@ -4,14 +4,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.Toast;
 
 import com.piper.myappauth.activity.SigninActivity;
-import com.piper.myappauth.helper.AuthenticationActivity;
 import com.piper.myappauth.helper.Keys;
-import com.piper.myappauth.helper.UrbanAuth;
 import com.piper.urbandemo.R;
-import com.piper.urbandemo.UrbanApplication;
 import com.piper.urbandemo.activity.home.HomeActivity;
 
 /**
