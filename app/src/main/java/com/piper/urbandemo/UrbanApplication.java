@@ -3,6 +3,7 @@ package com.piper.urbandemo;
 import android.app.Application;
 import android.content.Context;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.piper.urbandemo.network.APIService;
 import com.piper.urbandemo.network.RestClient;
 

@@ -18,8 +18,11 @@ import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.piper.myappauth.activity.SigninActivity;
+import com.piper.myappauth.helper.AuthActivity;
 import com.piper.urbandemo.R;
 import com.piper.urbandemo.UrbanApplication;
+import com.piper.urbandemo.activity.SplashActivity;
 import com.piper.urbandemo.adapter.TopStoryAdapter;
 import com.piper.urbandemo.helper.DatabaseHelper;
 import com.piper.urbandemo.helper.DateHelper;
@@ -122,34 +125,12 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     public void doSignout() {
-
-        //if user Logged in Via Google
-        if (preferenceManager.getBoooleanPref(Keys.GOOGLE_LOGIN)) {
-            preferenceManager.setBooleanPref(Keys.GOOGLE_LOGIN, false);
-            FirebaseAuth.getInstance().signOut();
-            navigateToLoginScreen();
-        }
-        //if user Logged in via Email
-        else if (preferenceManager.getBoooleanPref(Keys.EMAIL_LOGIN)) {
-            preferenceManager.setBooleanPref(Keys.EMAIL_LOGIN, false);
-            FirebaseAuth.getInstance().signOut();
-            navigateToLoginScreen();
-        }
-        //If user Logged in  via Phone
-        else if (preferenceManager.getBoooleanPref(Keys.PHONE_LOGIN)) {
-            preferenceManager.setBooleanPref(Keys.PHONE_LOGIN, false);
-            AuthUI.getInstance()
-                    .signOut(this)
-                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                        public void onComplete(@NonNull Task<Void> task) {
-                            navigateToLoginScreen();
-                        }
-                    });
-        }
+        AuthActivity.signOut();
 
         //clear all preferences and database
         DatabaseHelper.clearTopStories();
-        preferenceManager.resetPreferences();
+        Toast.makeText(HomeActivity.this, "Signing Out", Toast.LENGTH_SHORT).show();
+        navigateToLoginScreen();
     }
 
     /**
@@ -157,7 +138,7 @@ public class HomeActivity extends AppCompatActivity {
      */
     public void navigateToLoginScreen() {
         //move to login screen
-        Intent intent = new Intent(this, com.piper.urbandemo.activity.authentication.SigninActivity.class);
+        Intent intent = new Intent(this, SplashActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);

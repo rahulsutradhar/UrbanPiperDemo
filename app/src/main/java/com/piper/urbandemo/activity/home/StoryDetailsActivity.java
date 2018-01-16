@@ -155,7 +155,7 @@ public class StoryDetailsActivity extends AppCompatActivity {
         tabLayout.setupWithViewPager(pager);
         pager.setCurrentItem(0);
         pager.setOffscreenPageLimit(2);
-        tabLayout.setTabGravity(TabLayout.GRAVITY_CENTER);
+        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
         tabLayout.setTabMode(TabLayout.MODE_FIXED);
 
         for (int i = 0; i < tabLayout.getTabCount(); i++) {
