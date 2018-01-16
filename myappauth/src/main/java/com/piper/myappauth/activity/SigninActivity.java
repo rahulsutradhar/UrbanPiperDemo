@@ -51,16 +51,6 @@ public class SigninActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private Button emailSignin, emailSignup, phoneSignin;
 
-    /**
-     * Inititialize
-     *
-     * @param context
-     */
-    public static void initialize(Context context) {
-        SigninActivity.context = context;
-        mAuth = FirebaseAuth.getInstance();
-    }
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +59,9 @@ public class SigninActivity extends AppCompatActivity {
 
         //Connect views
         setViews();
+
+        //initiliaze firebase
+        mAuth = FirebaseAuth.getInstance();
 
         // Configure Google Sign In
         gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -251,29 +244,6 @@ public class SigninActivity extends AppCompatActivity {
                 });
     }
 
-
-    /**
-     * Check if user is Already Authenticated
-     *
-     * @return
-     */
-    public static boolean isAuthenticated() {
-        boolean isLoggedIn = false;
-
-        // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = getmAuth().getCurrentUser();
-        if (currentUser != null) {
-            if (currentUser.getDisplayName() != null && !currentUser.getDisplayName().isEmpty()) {
-                Toast.makeText(context, "Logged in as " + currentUser.getDisplayName() + " !!", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(context, "Welcome", Toast.LENGTH_SHORT).show();
-            }
-            isLoggedIn = true;
-        }
-
-        return isLoggedIn;
-    }
-
     /**
      * Navigate after login
      */
@@ -286,17 +256,10 @@ public class SigninActivity extends AppCompatActivity {
     }
 
     public static FirebaseAuth getmAuth() {
-        if (mAuth == null) {
-            mAuth = FirebaseAuth.getInstance();
-        }
         return mAuth;
     }
 
     public static void setmAuth(FirebaseAuth mAuth) {
         SigninActivity.mAuth = mAuth;
-    }
-
-    public static void signOut() {
-        mAuth.signOut();
     }
 }

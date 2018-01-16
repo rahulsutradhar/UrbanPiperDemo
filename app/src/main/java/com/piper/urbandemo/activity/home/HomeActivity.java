@@ -19,6 +19,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.piper.myappauth.activity.SigninActivity;
+import com.piper.myappauth.helper.AuthActivity;
 import com.piper.urbandemo.R;
 import com.piper.urbandemo.UrbanApplication;
 import com.piper.urbandemo.activity.SplashActivity;
@@ -124,7 +125,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     public void doSignout() {
-        SigninActivity.signOut();
+        AuthActivity.signOut();
 
         //clear all preferences and database
         DatabaseHelper.clearTopStories();
